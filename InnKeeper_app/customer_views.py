@@ -9,6 +9,7 @@ def customer_dashboard(request):
 
 def customer_profile(request):
     user_data = request.user
+    print(user_data.id)
     customer_data =Customer.objects.get(user = user_data)
     # print(customer_data.id)
     # print(customer_data.name)

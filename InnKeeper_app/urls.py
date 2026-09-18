@@ -28,5 +28,10 @@ urlpatterns = [
     path("owner_dashboard",owner_views.owner_dashboard,name="owner_dashboard"),
     path('owner_profile',owner_views.owner_profile,name="owner_profile"),
     path("edit_owner/<int:id>",owner_views.edit_owner,name="edit_owner"),
+    path('resort_add',owner_views.resort_add,name="resort_add"),
+    path('resort_facility/<int:resort_id>/',owner_views.resort_facility,name='resort_facilities'),
+    path('edit_resort/<int:id>/',owner_views.edit_resort,name='edit_resort'),
+    path('edit_facilities/<int:resort_id>/',owner_views.edit_facilities,name='edit_facilities'),
+    path('my_resorts/',owner_views.my_resorts,name='my_resorts'),
 
 ]

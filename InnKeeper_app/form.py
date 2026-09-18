@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 
-from InnKeeper_app.models import Login, Customer, Owner, Resorts
+from InnKeeper_app.models import Login, Customer, Owner, Resorts, Facilities
 
 
 class Login_form(UserCreationForm):
@@ -23,5 +23,12 @@ class Owner_Form(forms.ModelForm):
 class ResortForm(forms.ModelForm):
     class Meta:
         model = Resorts
+        fields = ['name', 'description', 'picture', 'pricing']
+
+
+class Facility_Form(forms.ModelForm):
+    class Meta:
+        model = Facilities
         fields ="__all__"
-        exclude =('user')
+        exclude= ("resort",)
+

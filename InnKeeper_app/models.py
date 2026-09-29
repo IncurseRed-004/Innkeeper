@@ -30,9 +30,12 @@ class Resorts(models.Model):
     owner = models.ForeignKey(Owner,on_delete=models.CASCADE,related_name='resort')
     name = models.CharField(max_length=100)
     description = models.TextField(max_length=1000)
+    address = models.CharField(max_length=500,null=True,blank=True)
+    location = models.CharField(max_length=500,null=True,blank=True)
     # image
     picture =  models.FileField(upload_to='resorts/pictures/')
     pricing = models.CharField(max_length=500)
+
     def __str__(self):
         return self.name
 
@@ -43,3 +46,14 @@ class Facilities(models.Model):
     wifi = models.BooleanField(default=False)
     lawn = models.BooleanField(default=False)
     balcony = models.BooleanField(default=False)
+
+
+class Schedules(models.Model):
+    facilities = models.ForeignKey(Facilities,on_delete=models.CASCADE,related_name = 'schedules')
+    from_date = models.DateField()
+    to_date = models.DateField()
+
+
+class Booking(models.Model):
+    customer = models.ForeignKey(Customer,on_delete=models.CASCADE,related_name='bookings')
+    schedule = models.ForeignKey(Schedules,on_delete=models.CASCADE,related_name='bookings')

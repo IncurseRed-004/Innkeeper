@@ -1,9 +1,10 @@
 from django import forms
-from django.contrib.auth import authenticate,login
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 
 
 from InnKeeper_app.form import Login_form, Customer_Form, Owner_Form
+from InnKeeper_app.models import Resorts, Facilities, Schedules, Customer, Booking
 
 
 # Create your views here.
@@ -13,6 +14,10 @@ def landing_page(request):
 
 def dashboard(request):
     return render(request, 'Dashboard.html')
+
+def Logout_view(request):
+    logout(request)
+    return redirect("Login")
 
 def Login(request):
 
@@ -81,3 +86,52 @@ def owner_registration(request):
 
             return redirect("Login")
     return render(request,'owner_page.html',{'data_key':data,'login_data':login_data})
+
+# list resort
+
+def list_resorts(request):
+    facility = Facilities.objects.all()
+    # print(facility)
+    return render(request,"Landing.html",{"facility":facility})
+
+def view_details(request,facility_id):
+    details = Facilities.objects.get(id=facility_id)
+
+    if request.user.is_authenticated:
+        return render(request,"resort_details.html",{"details":details})
+    else:
+        return redirect("Login")
+
+def book_now(request,id):
+    slots = Schedules.objects.filter(facilities=id)
+    print(slots)
+    return render(request,"book_now.html",{"slots":slots})
+
+def select_slot(request,id):
+
+    print("Logged in user:", request.user)
+    print("User ID:", request.user.id)
+
+
+    customer_var = Customer.objects.get(user = request.user)
+    slot_var = Schedules.objects.get(id=id)
+
+    if request.method =="POST":
+
+        # Booking.objects.create( customer = customer_var,schedule = slot_var) # customer and  schedule here come from the Booking model
+        booking = Booking()
+        booking.customer=customer_var
+        booking.schedule=slot_var
+        booking.save()
+        return redirect("booking_success")
+
+
+    return render(request,"select_slot.html",{"customer":customer_var,"slot":slot_var})
+
+
+def booking_success(request):
+    return render(request,"booking_success.html")
+
+
+def base_landing(request):
+    return render(request,"base_landing.html")

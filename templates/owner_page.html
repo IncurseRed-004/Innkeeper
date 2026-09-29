@@ -1,20 +1,407 @@
 <!doctype html>
-{%load crispy_forms_tags %}
+{% load crispy_forms_tags %}
 
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bootstrap demo</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  </head>
-  <body>
-  <form method="post">
-    {% csrf_token %}
-    {{login_data|crispy}}
-    {{data_key|crispy}}
-    <button type="submit">save</button>
-  </form>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-  </body>
+
+    <title>InnKeeper</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+          crossorigin="anonymous">
+
+
+    <style>
+
+        /* =========================
+           MAIN PAGE
+        ========================= */
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+
+            background: #0d0f14;
+
+            color: #ffffff;
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+        }
+
+
+        /* =========================
+           PAGE CONTAINER
+        ========================= */
+
+        .page-wrapper {
+
+            min-height: 100vh;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            padding: 40px 20px;
+
+            background:
+                radial-gradient(
+                    circle at top right,
+                    rgba(91, 75, 180, 0.08),
+                    transparent 35%
+                ),
+                #0d0f14;
+        }
+
+
+        /* =========================
+           FORM CARD
+        ========================= */
+
+        .form-card {
+
+            width: 100%;
+            max-width: 650px;
+
+            background: #181b23;
+
+            border: 1px solid #292d38;
+
+            border-radius: 12px;
+
+            padding: 40px;
+
+            box-shadow:
+                0 20px 50px rgba(0, 0, 0, 0.45);
+
+            position: relative;
+        }
+
+
+        /* =========================
+           TOP ACCENT
+        ========================= */
+
+        .accent-line {
+
+            position: absolute;
+
+            top: 0;
+            left: 35px;
+
+            width: 55px;
+            height: 3px;
+
+            background: #7c5cff;
+
+            border-radius: 0 0 5px 5px;
+        }
+
+
+        /* =========================
+           BRAND
+        ========================= */
+
+        .brand {
+
+            font-size: 28px;
+
+            font-weight: 700;
+
+            letter-spacing: -0.5px;
+
+            color: #ffffff;
+
+            margin-bottom: 5px;
+
+            text-align: center;
+        }
+
+        .brand span {
+            color: #7c5cff;
+        }
+
+
+        /* =========================
+           SUBTITLE
+        ========================= */
+
+        .subtitle {
+
+            color: #737b91;
+
+            font-size: 14px;
+
+            margin-bottom: 30px;
+
+            text-align: center;
+        }
+
+
+        /* =========================
+           FORM LABELS
+        ========================= */
+
+        .form-label {
+
+            color: #aeb4c3 !important;
+
+            font-size: 13px;
+
+            font-weight: 500;
+
+            margin-bottom: 8px;
+        }
+
+
+        /* =========================
+           INPUTS
+        ========================= */
+
+        .form-control,
+        .form-select {
+
+            background: #14171e !important;
+
+            border: 1px solid #303440 !important;
+
+            color: #ffffff !important;
+
+            border-radius: 7px;
+
+            min-height: 46px;
+
+            padding: 10px 13px;
+
+            transition: all 0.2s ease;
+        }
+
+
+        /* Placeholder */
+
+        .form-control::placeholder {
+
+            color: #555c70;
+
+        }
+
+
+        /* Focus */
+
+        .form-control:focus,
+        .form-select:focus {
+
+            background: #14171e !important;
+
+            border-color: #7c5cff !important;
+
+            box-shadow:
+                0 0 0 3px rgba(124, 92, 255, 0.12) !important;
+
+            color: #ffffff !important;
+        }
+
+
+        /* =========================
+           TEXTAREA
+        ========================= */
+
+        textarea.form-control {
+
+            min-height: 110px;
+
+            resize: vertical;
+        }
+
+
+        /* =========================
+           CHECKBOX
+        ========================= */
+
+        .form-check-input {
+
+            background-color: #14171e;
+
+            border-color: #3a3f4d;
+
+        }
+
+        .form-check-input:checked {
+
+            background-color: #7c5cff;
+
+            border-color: #7c5cff;
+
+        }
+
+
+        .form-check-label {
+
+            color: #aeb4c3;
+
+        }
+
+
+        /* =========================
+           HELP / ERROR TEXT
+        ========================= */
+
+        .form-text {
+
+            color: #62697b !important;
+
+            font-size: 12px;
+        }
+
+        .invalid-feedback {
+
+            color: #ff6b81;
+
+        }
+
+
+        /* =========================
+           SAVE BUTTON
+        ========================= */
+
+        .save-btn {
+
+            width: 100%;
+
+            height: 48px;
+
+            margin-top: 15px;
+
+            border: none;
+
+            border-radius: 7px;
+
+            background: #7c5cff;
+
+            color: #ffffff;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            transition: all 0.25s ease;
+
+            cursor: pointer;
+        }
+
+
+        .save-btn:hover {
+
+            background: #6848e8;
+
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 8px 20px rgba(124, 92, 255, 0.25);
+        }
+
+
+        .save-btn:active {
+
+            transform: translateY(0);
+
+        }
+
+
+        /* =========================
+           FORM SECTIONS
+        ========================= */
+
+        .form-card form > div {
+
+            margin-bottom: 18px;
+
+        }
+
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 600px) {
+
+            .page-wrapper {
+
+                padding: 20px 15px;
+
+            }
+
+            .form-card {
+
+                padding: 30px 22px;
+
+            }
+
+            .brand {
+
+                font-size: 24px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="page-wrapper">
+
+    <div class="form-card">
+
+        <div class="accent-line"></div>
+
+
+        <div class="brand">
+            Inn<span>Keeper</span>
+        </div>
+
+        <div class="subtitle">
+            Update your account information
+        </div>
+
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            {{ login_data|crispy }}
+
+            {{ data_key|crispy }}
+
+
+            <button type="submit" class="save-btn">
+                Save Changes
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwxHj09JcYn3nv7wiPVlz7YYwJrVwcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous">
+</script>
+
+</body>
+
 </html>

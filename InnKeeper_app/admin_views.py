@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 
 from InnKeeper_app.form import Owner_Form
-from InnKeeper_app.models import Customer, Owner
+from InnKeeper_app.models import Customer, Owner, Facilities
 
 
 def admin_dashboard(request):
@@ -48,3 +48,8 @@ def update_owner(request, id):
     else:
         form = Owner_Form(instance=data)
     return render(request, 'admin/update_owner.html', {'form': form})
+
+
+def view_resorts(request):
+    resorts = Facilities.objects.all()
+    return render(request,'admin/view_resorts.html',{'resorts':resorts})

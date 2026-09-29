@@ -1,20 +1,265 @@
 <!doctype html>
-{%load crispy_forms_tags %}
+{% load crispy_forms_tags %}
+
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bootstrap demo</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  </head>
-  <body>
-  <form method="post">
-    {% csrf_token %}
-    {{login_data|crispy}}
-    {{data_key|crispy}}
-    <button type="submit">save</button>
-  </form>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-  </body>
+    <title>Innkeeper</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+          crossorigin="anonymous">
+
+    <style>
+
+        /* ---------- PAGE ---------- */
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #f8f8f8;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #171717;
+        }
+
+
+        /* ---------- MAIN AREA ---------- */
+
+        .page-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 50px 20px;
+        }
+
+
+        /* ---------- FORM CARD ---------- */
+
+        .form-card {
+            width: 100%;
+            max-width: 650px;
+            background: white;
+            padding: 45px;
+            border-radius: 18px;
+            border: 1px solid #e8e8e8;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.08);
+        }
+
+
+        .owner-register {
+    width: 100%;
+    max-width: 650px;
+    text-align: center;
+    margin-top: 18px;
+}
+
+.owner-register p {
+    margin: 0;
+    color: #777;
+    font-size: 14px;
+}
+
+.owner-register a {
+    color: #ff572f;
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 5px;
+    transition: 0.2s ease;
+}
+
+.owner-register a:hover {
+    color: #e64a19;
+    text-decoration: underline;
+}
+
+        /* ---------- LOGO ---------- */
+
+        .brand {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #171717;
+        }
+
+        .brand span {
+            color: #ff572f;
+        }
+
+
+        /* ---------- HEADING ---------- */
+
+        .form-title {
+            text-align: center;
+            font-size: 15px;
+            color: #777;
+            margin-bottom: 35px;
+        }
+
+
+        /* ---------- LABELS ---------- */
+
+        .form-label {
+            font-weight: 600;
+            color: #252525;
+            margin-bottom: 8px;
+        }
+
+
+        /* ---------- INPUTS ---------- */
+
+        .form-control,
+        .form-select {
+            min-height: 48px;
+            border: 1px solid #dddddd;
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #171717;
+            background: #fff;
+            transition: all 0.25s ease;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #ff572f;
+            box-shadow: 0 0 0 3px rgba(255, 87, 47, 0.12);
+        }
+
+
+        /* ---------- TEXTAREA ---------- */
+
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+
+        /* ---------- HELP TEXT ---------- */
+
+        .form-text {
+            color: #888;
+            font-size: 13px;
+        }
+
+
+        /* ---------- SAVE BUTTON ---------- */
+
+        .save-btn {
+            width: 100%;
+            height: 50px;
+            margin-top: 15px;
+
+            border: none;
+            border-radius: 25px;
+
+            background: #171717;
+            color: white;
+
+            font-size: 15px;
+            font-weight: 600;
+
+            transition: all 0.3s ease;
+        }
+
+        .save-btn:hover {
+            background: #ff572f;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 87, 47, 0.25);
+        }
+
+        .save-btn:active {
+            transform: scale(0.98);
+        }
+
+
+        /* ---------- ORANGE TOP LINE ---------- */
+
+        .orange-line {
+            width: 45px;
+            height: 4px;
+            background: #ff572f;
+            border-radius: 10px;
+            margin: 0 auto 18px;
+        }
+
+
+        /* ---------- RESPONSIVE ---------- */
+
+        @media (max-width: 576px) {
+
+            .page-wrapper {
+                padding: 25px 15px;
+            }
+
+            .form-card {
+                padding: 30px 22px;
+                border-radius: 14px;
+            }
+
+            .brand {
+                font-size: 26px;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+<div class="page-wrapper">
+
+    <div class="form-card">
+
+        <div class="orange-line"></div>
+
+        <div class="brand">
+            INN<span>KEEPER</span>
+        </div>
+
+        <div class="form-title">
+            Update your information
+        </div>
+
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            {{ login_data|crispy }}
+
+            {{ data_key|crispy }}
+
+
+            <button type="submit" class="save-btn">
+                Save Changes
+            </button>
+
+        </form>
+
+    </div>
+
+
+<div class="owner-register">
+    <p>
+        Do you want to list your Resorts?
+        <a href="{% url 'owner_registration' %}">
+            Register as an Owner
+        </a>
+    </p>
+</div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwxH9JcYn3nv7wiPVlz7YYwJrVwcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous">
+</script>
+
+</body>
 </html>

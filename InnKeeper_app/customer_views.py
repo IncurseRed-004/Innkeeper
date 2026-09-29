@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 
 from InnKeeper_app.form import Customer_Form
-from InnKeeper_app.models import Customer
+from InnKeeper_app.models import Customer, Resorts, Booking
 
 
 def customer_dashboard(request):
@@ -28,3 +28,11 @@ def edit_customer(request,id):
     else:
         form = Customer_Form(instance = data)
     return render(request,'customer/edit_customer.html',{"form":form})
+
+
+def booking_history(request):
+    customer = Customer.objects.get(user = request.user)
+    history = Booking.objects.filter(customer = customer)
+    return render(request,"customer/booking_history.html",{"history":history})
+
+

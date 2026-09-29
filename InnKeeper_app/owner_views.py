@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 
-from InnKeeper_app.form import Customer_Form, Owner_Form, ResortForm, Facility_Form
-from InnKeeper_app.models import Customer, Owner, Resorts, Facilities
+from InnKeeper_app.form import Customer_Form, Owner_Form, ResortForm, Facility_Form, Schedule_form
+from InnKeeper_app.models import Customer, Owner, Resorts, Facilities, Schedules
 
 
 def owner_dashboard(request):
@@ -106,7 +106,45 @@ def edit_facilities(request,resort_id):
 
     return render(request,'owner/edit_facilities.html',{'form':form})
 
+# delete resorts:
+
+def delete_resort(request,resort_id):
+    owner = Owner.objects.get(user = request.user)
+    resort = Resorts.objects.get(id=resort_id,owner = owner)
+    resort.delete()
+    return redirect('my_resorts')
+
 
 def my_resorts(request):
-    resorts = Resorts.objects.all()
-    return render(request,'owner/my_resorts.html',{'resorts':resorts})
+    owner_var = Owner.objects.get(user = request.user)
+    facilities = Facilities.objects.filter(resort__owner=owner_var)
+    return render(request,'owner/my_resorts.html',{'facilities':facilities})
+
+# schedules
+
+def add_schedules(request,id):
+    data = Facilities.objects.get(id = id)
+
+    if request.method == 'POST':
+        form = Schedule_form(request.POST)
+        if form.is_valid():
+            schedules = form.save(commit=False)
+            schedules.facilities = data
+            schedules.save()
+            return redirect('my_resorts')
+
+    else:
+        form = Schedule_form()
+
+    return render(request,'owner/add_schedules.html',{'form':form})
+
+def view_schedules(request,id):
+    schedules = Schedules.objects.filter(facilities = id)
+    return render(request,'owner/view_schedules.html',{'schedules':schedules})
+
+
+def  delete_schedule(request,id):
+     slots = Schedules.objects.get(id=id)
+     slots.delete()
+     return redirect('my_resorts')
+

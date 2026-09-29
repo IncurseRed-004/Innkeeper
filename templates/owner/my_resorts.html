@@ -9,17 +9,28 @@
     .row.g-4 {
         display: grid !important;
         grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+
         gap: 35px !important;
+
         margin: 0 !important;
         width: 100% !important;
+
+        align-items: stretch !important;
     }
 
-    /* Bootstrap columns */
+
+    /* =========================
+       BOOTSTRAP COLUMN RESET
+       ========================= */
+
     .row.g-4 > .col-md-4 {
         width: auto !important;
         max-width: none !important;
+
         padding: 0 !important;
         margin: 0 !important;
+
+        display: flex !important;
     }
 
 
@@ -30,7 +41,13 @@
     .resort-card {
         width: 100% !important;
         height: 100% !important;
+
+        min-height: 650px;
+
         margin: 0 !important;
+
+        display: flex !important;
+        flex-direction: column !important;
 
         background-color: #171a21 !important;
         color: white !important;
@@ -38,7 +55,7 @@
         border: 1px solid #2b303b !important;
         border-radius: 12px !important;
 
-        overflow: hidden;
+        overflow: hidden !important;
 
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
 
@@ -48,9 +65,16 @@
             border-color 0.3s ease;
     }
 
+
+    /* =========================
+       CARD HOVER
+       ========================= */
+
     .resort-card:hover {
         transform: translateY(-7px);
+
         box-shadow: 0 15px 30px rgba(0, 0, 0, 0.65);
+
         border-color: #4a90e2 !important;
     }
 
@@ -60,15 +84,18 @@
        ========================= */
 
     .resort-card img {
-        display: block;
+        display: block !important;
 
         width: 100% !important;
         height: 220px !important;
 
-        object-fit: cover;
+        object-fit: cover !important;
+
+        flex-shrink: 0 !important;
 
         transition: transform 0.4s ease;
     }
+
 
     .resort-card:hover img {
         transform: scale(1.04);
@@ -84,22 +111,33 @@
         color: white !important;
 
         padding: 18px !important;
+
+        flex-shrink: 0 !important;
     }
+
 
     .resort-card .card-title,
     .resort-card .card-text,
     .resort-card p,
     .resort-card h5 {
         color: white !important;
+
         font-weight: bold;
     }
+
 
     .resort-card .card-title {
         margin-bottom: 10px;
     }
 
-    .resort-card .card-text {
+
+    /* =========================
+       DESCRIPTION
+       ========================= */
+
+    .resort-card .description {
         min-height: 60px;
+
         max-height: 60px;
 
         overflow: hidden;
@@ -113,11 +151,21 @@
     .facility-list {
         background-color: #171a21 !important;
 
-        min-height: 150px;
+        height: 180px !important;
+        min-height: 180px !important;
+        max-height: 180px !important;
+
+        overflow-y: auto !important;
+
+        flex-shrink: 0 !important;
+
+        margin: 0 !important;
     }
+
 
     .facility-list .list-group-item {
         background-color: #171a21 !important;
+
         color: white !important;
 
         border-color: #2b303b !important;
@@ -128,77 +176,179 @@
     }
 
 
-   /* =========================
-   BUTTON AREA
-   ========================= */
-
-.resort-card .card-links {
-    background-color: #171a21 !important;
-    padding: 18px !important;
-
-    display: flex;
-    gap: 10px;
-}
-
-
-/* =========================
-   BUTTONS
-   ========================= */
-
-.resort-card .card-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    width: 130px;
-    height: 45px;
-
-    padding: 0;
-
-    color: white !important;
-    background-color: #2563eb;
-
-    border-radius: 7px;
-
-    text-decoration: none;
-    font-weight: bold;
-
-    transition:
-        transform 0.25s ease,
-        background-color 0.25s ease,
-        box-shadow 0.25s ease;
-}
-
-.resort-card .card-link:hover {
-    background-color: #3b82f6;
-
-    transform: translateY(-3px);
-
-    box-shadow: 0 7px 16px rgba(37, 99, 235, 0.45);
-}
-
-.resort-card .card-link:active {
-    transform: scale(0.95);
-}
-
     /* =========================
-       RESPONSIVE
+       BUTTON AREA
        ========================= */
 
-    @media (max-width: 992px) {
+    .resort-card .card-links {
+        background-color: #171a21 !important;
+
+        padding: 18px !important;
+
+        margin-top: auto !important;
+
+        display: grid !important;
+
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr)) !important;
+
+        gap: 10px !important;
+
+        flex-shrink: 0 !important;
+    }
+
+
+    /* =========================
+       REMOVE BOOTSTRAP LINK MARGIN
+       ========================= */
+
+    .resort-card .card-links .card-link,
+    .resort-card .card-links .card-link + .card-link {
+        margin: 0 !important;
+    }
+
+
+    /* =========================
+       BUTTONS
+       ========================= */
+
+    .resort-card .card-links .card-link {
+        width: 100% !important;
+
+        height: 45px !important;
+
+        min-width: 0 !important;
+
+        padding: 0 5px !important;
+
+        box-sizing: border-box !important;
+
+        display: flex !important;
+
+        align-items: center !important;
+
+        justify-content: center !important;
+
+        color: white !important;
+
+        background-color: #2563eb !important;
+
+        border: none !important;
+
+        border-radius: 7px !important;
+
+        text-decoration: none !important;
+
+        font-weight: bold !important;
+
+        font-size: 13px !important;
+
+        line-height: 1 !important;
+
+        text-align: center !important;
+
+        white-space: nowrap !important;
+
+        overflow: hidden !important;
+
+        transition:
+            transform 0.25s ease,
+            background-color 0.25s ease,
+            box-shadow 0.25s ease;
+    }
+
+
+    /* =========================
+       BUTTON HOVER
+       ========================= */
+
+    .resort-card .card-links .card-link:hover {
+        background-color: #3b82f6 !important;
+
+        transform: translateY(-3px);
+
+        box-shadow:
+            0 7px 16px rgba(37, 99, 235, 0.45);
+    }
+
+
+    /* =========================
+       BUTTON ACTIVE
+       ========================= */
+
+    .resort-card .card-links .card-link:active {
+        transform: scale(0.95);
+    }
+
+
+    /* =========================
+       DELETE BUTTON
+       ========================= */
+
+    .resort-card .card-links .delete-btn {
+        background-color: #dc3545 !important;
+    }
+
+
+    .resort-card .card-links .delete-btn:hover {
+        background-color: #bb2d3b !important;
+
+        box-shadow:
+            0 7px 16px rgba(220, 53, 69, 0.45);
+    }
+
+
+    /* =========================
+       TABLET
+       ========================= */
+
+    @media (max-width: 1100px) {
 
         .row.g-4 {
-            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr)) !important;
+
             gap: 25px !important;
         }
 
+
+        .resort-card .card-links {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr)) !important;
+        }
+
     }
+
+
+    /* =========================
+       MOBILE
+       ========================= */
 
     @media (max-width: 576px) {
 
         .row.g-4 {
             grid-template-columns: 1fr !important;
+
             gap: 20px !important;
+        }
+
+
+        .resort-card {
+            min-height: auto !important;
+        }
+
+
+        .resort-card .card-links {
+            grid-template-columns: 1fr !important;
+
+            gap: 10px !important;
+        }
+
+
+        .resort-card .card-links .card-link {
+            height: 45px !important;
+
+            font-size: 14px !important;
         }
 
     }
@@ -210,34 +360,43 @@
 
     <div class="row g-4">
 
-        {% for resort in resorts %}
+        {% for facility in facilities %}
 
         <div class="col-md-4">
 
             <div class="card resort-card">
 
-                {% if resort.picture %}
-                    <img src="{{ resort.picture.url }}"
+                {% if facility.resort.picture %}
+                    <img src="{{ facility.resort.picture.url }}"
                          class="card-img-top"
-                         alt="{{ resort.name }}">
+                         alt="{{ facility.resort.name }}">
                 {% endif %}
 
                 <div class="card-body">
 
+
                     <h5 class="card-title">
-                        {{ resort.name }}
+                        {{ facility.resort.name }}
                     </h5>
 
                     <p>
-                        Facilities count: {{ resort.facilities.count }}
+                        Facilities count: {{ facilities.count }}
                     </p>
 
                     <p class="card-text">
-                        {{ resort.description }}
+                        {{ facility.resort.description }}
+                    </p>
+
+                    <p class="card-text">
+                        {{ facility.resort.address }}
+                    </p>
+
+                    <p class="card-text">
+                        {{ facility.resort.location }}
                     </p>
 
                     <h5>
-                        {{ resort.pricing }}
+                        {{ facility.resort.pricing }}
                     </h5>
 
                 </div>
@@ -245,7 +404,7 @@
 
                 <ul class="list-group list-group-flush facility-list">
 
-                    {% for facility in resort.facilities.all %}
+
 
                         {% if facility.pool %}
                             <li class="list-group-item">
@@ -277,28 +436,45 @@
                             </li>
                         {% endif %}
 
-                    {% empty %}
+
 
                         <li class="list-group-item">
                             No facilities found
                         </li>
 
-                    {% endfor %}
+
 
                 </ul>
 
 
+
                 <div class="card-body card-links">
 
-                    <a href="{% url 'edit_resort' resort.id %}"
+                    <a href="{% url 'edit_resort' facility.id %}"
                        class="card-link">
                         Edit Resort
                     </a>
 
-                    <a href="{% url 'edit_facilities' resort.id %}"
+                    <a href="{% url 'edit_facilities' facility.id %}"
                        class="card-link">
                         Edit Facilities
                     </a>
+
+                    <a href="{% url 'add_schedules' facility.id %}"
+                       class="card-link delete-btn">
+                        add Schedule
+                    </a>
+
+                    <a href="{% url 'view_schedules' facility.id %}"
+                       class="card-link">
+                        view schedules
+                    </a>
+
+                    <a href="{% url 'delete_resort' facility.id %}"
+                       class="card-link delete-btn">
+                        Delete Resort
+                    </a>
+
 
                 </div>
 
@@ -306,7 +482,8 @@
 
         </div>
 
-        {% endfor %}
+    {% endfor %}
+
 
     </div>
 

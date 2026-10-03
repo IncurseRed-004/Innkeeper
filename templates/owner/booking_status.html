@@ -1,0 +1,313 @@
+{% extends 'owner/owner_base.html' %}
+
+{% block content %}
+
+<style>
+    /* ================================
+   BOOKING STATUS PAGE
+================================ */
+
+.booking-container {
+    width: 95%;
+    max-width: 1200px;
+    margin: 40px auto;
+}
+
+
+/* ================================
+   HEADER
+================================ */
+
+.booking-header {
+    margin-bottom: 25px;
+}
+
+.booking-header h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.booking-header p {
+    margin-top: 7px;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+
+/* ================================
+   TABLE CONTAINER
+================================ */
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    background: #171a21;
+    border-radius: 12px;
+    border: 1px solid #292d36;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+
+/* ================================
+   TABLE
+================================ */
+
+.booking-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #ffffff;
+}
+
+
+/* ================================
+   TABLE HEADER
+================================ */
+
+.booking-table thead {
+    background: #20242d;
+}
+
+.booking-table th {
+    padding: 17px 20px;
+    text-align: left;
+
+    color: #bfc3cc;
+    font-size: 13px;
+    font-weight: 600;
+
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+
+    border-bottom: 1px solid #30343d;
+}
+
+
+/* ================================
+   TABLE BODY
+================================ */
+
+.booking-table td {
+    padding: 18px 20px;
+
+    color: #d7d9df;
+    font-size: 14px;
+
+    border-bottom: 1px solid #292d36;
+}
+
+
+/* ================================
+   ROW HOVER
+================================ */
+
+.booking-table tbody tr {
+    transition: background 0.2s ease;
+}
+
+.booking-table tbody tr:hover {
+    background: #1e222b;
+}
+
+
+/* Remove border from last row */
+
+.booking-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+/* ================================
+   CUSTOMER NAME
+================================ */
+
+.customer-name {
+    color: #ffffff;
+    font-weight: 500;
+}
+
+
+/* ================================
+   TIMESTAMP
+================================ */
+
+.timestamp {
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+
+/* ================================
+   STATUS
+================================ */
+
+.status {
+    display: inline-block;
+
+    padding: 6px 13px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    text-align: center;
+}
+
+
+/* Pending */
+
+.status.pending {
+    background: rgba(255, 193, 7, 0.12);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.25);
+}
+
+
+/* Approved */
+
+.status.approved {
+    background: rgba(25, 200, 120, 0.12);
+    color: #19c878;
+    border: 1px solid rgba(25, 200, 120, 0.25);
+}
+
+
+/* Rejected */
+
+.status.rejected {
+    background: rgba(255, 75, 75, 0.12);
+    color: #ff5c5c;
+    border: 1px solid rgba(255, 75, 75, 0.25);
+}
+
+
+/* ================================
+   NO BOOKINGS
+================================ */
+
+.no-bookings {
+    padding: 40px !important;
+
+    text-align: center;
+
+    color: #888e9a !important;
+    font-size: 14px;
+}
+
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 768px) {
+
+    .booking-container {
+        width: 92%;
+        margin: 25px auto;
+    }
+
+    .booking-header h2 {
+        font-size: 23px;
+    }
+
+    .booking-table th,
+    .booking-table td {
+        padding: 13px 14px;
+        font-size: 13px;
+    }
+
+    .status {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+}
+</style>
+
+
+<div class="booking-container">
+
+    <div class="booking-header">
+        <h2>Booking Status</h2>
+        <p>Manage bookings for your resorts</p>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table class="booking-table">
+
+            <thead>
+                <tr>
+                    <th>Customer Name</th>
+                    <th>Resort Name</th>
+                    <th>Time Stamp</th>
+                    <th>from date</th>
+                    <th>to date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for i in booking %}
+
+                <tr>
+
+                    <td>
+                        <div class="customer-name">
+                            {{ i.customer.name }}
+                        </div>
+                    </td>
+
+                    <td>
+                        {{ i.schedule.facilities.resort.name }}
+                    </td>
+
+                    <td>
+                        <span class="timestamp">
+                            {{ i.time_data }}
+                        </span>
+                    </td>
+                    <td>
+                        {{ i.schedule.from_date}}
+                    </td>
+                    <td>
+                        {{i.schedule.to_date}}
+                    </td>
+
+                    <td>
+
+                       {% if i.status == 0 %}
+                        <a href="{% url 'approved' i.id %}" class="btn btn-success">approve</a>
+                        <a href="{% url 'rejected' i.id %}" class="btn btn-danger">reject</a>
+                        {% elif i.status == 1 %}
+                        <h5>approved</h5>
+                        {% else %}
+                        <h5>rejected</h5>
+                        {% endif %}
+                    </td>
+
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="4" class="no-bookings">
+                        No bookings found
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

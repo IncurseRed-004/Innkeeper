@@ -10,6 +10,7 @@ urlpatterns = [
     path("Logout_view",views.Logout_view,name="Logout_view"),
     path("customer_registration",views.customer_registration,name="customer_registration"),
     path("owner_registration",views.owner_registration,name="owner_registration"),
+    path('account_dashboard',views.account_dashboard,name='account_dashboard'),
 
     path("view_details/<int:facility_id>",views.view_details,name="view_details"),
     path('book_now/<int:id>',views.book_now,name="book_now"),
@@ -24,6 +25,7 @@ urlpatterns = [
     path('view_owner',admin_views.view_owner,name="view_owner"),
     path('delete_owner/<int:id>',admin_views.delete_owner,name="delete_owner"),
     path("update_owner/<int:id>",admin_views.update_owner,name="update_owner"),
+    path('view_resorts',admin_views.view_resorts,name="view_resorts"),
 
     #customer_views
     path("customer_dashboard",customer_views.customer_dashboard,name="customer_dashboard"),
@@ -45,4 +47,7 @@ urlpatterns = [
     path('add_schedules/<int:id>/',owner_views.add_schedules,name='add_schedules'),
     path('view_schedules/<int:id>',owner_views.view_schedules,name='view_schedules'),
     path('delete_schedule/<int:id>',owner_views.delete_schedule,name='delete_schedule'),
+    path('booking_status',owner_views.booking_status,name='booking_status'),
+    path('approved/<int:id>',owner_views.approved,name='approved'),
+    path('rejected/<int:id>',owner_views.rejected,name='rejected'),
 ]

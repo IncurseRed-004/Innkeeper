@@ -19,6 +19,25 @@ def Logout_view(request):
     logout(request)
     return redirect("Login")
 
+
+def account_dashboard(request):
+
+    user = request.user
+    if user is not None:
+        login(request, user)
+
+        if user.is_customer:
+            return redirect('customer_dashboard')
+
+        elif user.is_owner:
+            return redirect('owner_dashboard')
+
+        elif user.is_staff:
+            return redirect('admin_dashboard')
+    else:
+        print("Invalid Credentials")
+
+
 def Login(request):
 
     if request.method=="POST":

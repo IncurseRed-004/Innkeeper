@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 
 from InnKeeper_app.form import Customer_Form, Owner_Form, ResortForm, Facility_Form, Schedule_form
-from InnKeeper_app.models import Customer, Owner, Resorts, Facilities, Schedules
+from InnKeeper_app.models import Customer, Owner, Resorts, Facilities, Schedules, Booking
 
 
 def owner_dashboard(request):
@@ -116,8 +116,12 @@ def delete_resort(request,resort_id):
 
 
 def my_resorts(request):
+    user = request.user
+    print(user)
     owner_var = Owner.objects.get(user = request.user)
+    print(owner_var)
     facilities = Facilities.objects.filter(resort__owner=owner_var)
+    print(facilities)
     return render(request,'owner/my_resorts.html',{'facilities':facilities})
 
 # schedules
@@ -148,3 +152,20 @@ def  delete_schedule(request,id):
      slots.delete()
      return redirect('my_resorts')
 
+def booking_status(request):
+    owner = Owner.objects.get(user = request.user)
+    booking = Booking.objects.filter(schedule__facilities__resort__owner=owner)
+    return render(request,'owner/booking_status.html',{'booking':booking})
+
+def approved(request, id):
+    booking = Booking.objects.get(id = id)
+    booking.status = 1
+    booking.save()
+    return redirect('booking_status')
+
+
+def rejected(request, id):
+    booking = Booking.objects.get(id = id)
+    booking.status = 2
+    booking.save()
+    return redirect('booking_status')

@@ -26,7 +26,7 @@ def view_owner(request):
 def delete_owner(request,id):
     data = Owner.objects.get(id=id)
     data.delete()
-    return redirect('admin/view_owner.html')
+    return redirect('view_owner')
 
 # def update_owner(request,id):
 #     data = Owner.objects.get(id=id)
@@ -51,5 +51,6 @@ def update_owner(request, id):
 
 
 def view_resorts(request):
-    resorts = Facilities.objects.all()
-    return render(request,'admin/view_resorts.html',{'resorts':resorts})
+    data = Facilities.objects.all()
+    print(data)
+    return render(request,'admin/view_resorts.html',{'data':data})

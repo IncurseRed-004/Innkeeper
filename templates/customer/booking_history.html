@@ -269,13 +269,23 @@
 
                             <!-- Status -->
 
-                            <td>
+<td>
 
                                 <span class="status">
-                                    Confirmed
-                                </span>
 
-                            </td>
+                                    {% if booking.status == 0 %}
+                                    <h5>pending</h5>
+
+                                    {% elif booking.status == 1 %}
+                                    <h5>Confirmed</h5>
+
+                                    {% else %}
+                                    <h5>rejected</h5>
+
+                                    {% endif %}
+                                </span>
+</td>
+
 
                         </tr>
 

@@ -2,23 +2,716 @@
 
 {% block content %}
 
-<table>
-    <tr>
-        <th>owner name</th>
+<style>
 
-        <th>email</th>
-        <th>delete</th>
-        <th>update</th>
-    </tr>
-    {% for i in data %}
-    <tr>
-        <td>{{i.name}}</td>
-        <td>{{i.phone}}</td>
-        <td>{{i.email}}</td>
-        <td><a href="{% url 'delete_owner' i.id %}" class="btn btn-danger">delete</a></td>
-        <td><a href="{% url 'update_owner' i.id %}" class="btn btn-danger">Update</a></td>
-    </tr>
-    {% endfor %}
-</table>
+/* =========================================================
+   PAGE
+========================================================= */
 
-{% endblock %}C
+.resort-page {
+    padding: 35px;
+    min-height: 100vh;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.resort-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    margin-bottom: 32px;
+}
+
+.header-left h2 {
+    margin: 0;
+
+    color: #ffffff;
+    font-size: 32px;
+    font-weight: 700;
+
+    letter-spacing: -0.8px;
+}
+
+.header-left p {
+    margin: 8px 0 0;
+
+    color: #8e95a3;
+    font-size: 14px;
+}
+
+.resort-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 8px 14px;
+
+    background: #1b1f27;
+
+    border: 1px solid #303540;
+    border-radius: 30px;
+
+    color: #c8cdd6;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.count-dot {
+    width: 7px;
+    height: 7px;
+
+    background: #20d489;
+
+    border-radius: 50%;
+
+    box-shadow: 0 0 10px rgba(32, 212, 137, 0.6);
+}
+
+
+/* =========================================================
+   GRID
+========================================================= */
+
+.resort-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 26px;
+}
+
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.resort-card {
+    position: relative;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            145deg,
+            #191d25,
+            #14171d
+        );
+
+    border: 1px solid #292e38;
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.18);
+
+    transition:
+        transform 0.35s ease,
+        box-shadow 0.35s ease,
+        border-color 0.35s ease;
+}
+
+.resort-card:hover {
+    transform: translateY(-8px);
+
+    border-color: #414754;
+
+    box-shadow:
+        0 22px 45px rgba(0, 0, 0, 0.32);
+}
+
+
+/* =========================================================
+   IMAGE
+========================================================= */
+
+.resort-image-container {
+    position: relative;
+
+    width: 100%;
+    height: 235px;
+
+    overflow: hidden;
+
+    background: #0f1115;
+}
+
+.resort-image {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    transition:
+        transform 0.6s cubic-bezier(.2,.7,.2,1);
+}
+
+.resort-card:hover .resort-image {
+    transform: scale(1.08);
+}
+
+
+/* =========================================================
+   IMAGE OVERLAY
+========================================================= */
+
+.image-overlay {
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            to top,
+            rgba(8, 10, 14, 0.85) 0%,
+            rgba(8, 10, 14, 0.25) 45%,
+            rgba(8, 10, 14, 0.05) 100%
+        );
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   PRICE BADGE
+========================================================= */
+
+.price-badge {
+    position: absolute;
+
+    top: 16px;
+    right: 16px;
+
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    padding: 8px 12px;
+
+    background: rgba(15, 17, 22, 0.78);
+
+    border: 1px solid rgba(255, 255, 255, 0.13);
+
+    border-radius: 9px;
+
+    backdrop-filter: blur(12px);
+
+    color: #ffffff;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    box-shadow:
+        0 5px 18px rgba(0, 0, 0, 0.2);
+}
+
+.price-badge small {
+    color: #9299a6;
+
+    font-size: 10px;
+    font-weight: 400;
+}
+
+
+/* =========================================================
+   IMAGE TITLE
+========================================================= */
+
+.image-title {
+    position: absolute;
+
+    left: 20px;
+    right: 20px;
+    bottom: 18px;
+}
+
+.image-title h3 {
+    margin: 0;
+
+    color: #ffffff;
+
+    font-size: 22px;
+    font-weight: 650;
+
+    letter-spacing: -0.4px;
+
+    text-shadow:
+        0 2px 12px rgba(0, 0, 0, 0.45);
+}
+
+
+/* =========================================================
+   CARD CONTENT
+========================================================= */
+
+.resort-content {
+    padding: 20px;
+}
+
+
+/* =========================================================
+   OWNER
+========================================================= */
+
+.owner-box {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 12px;
+
+    background: rgba(255, 255, 255, 0.025);
+
+    border: 1px solid #282d36;
+
+    border-radius: 12px;
+}
+
+.owner-icon {
+    width: 38px;
+    height: 38px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            #292e38,
+            #20242c
+        );
+
+    border: 1px solid #353b46;
+
+    border-radius: 10px;
+
+    color: #c9ced7;
+
+    font-size: 17px;
+}
+
+.owner-details {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+}
+
+.owner-label {
+    margin-bottom: 2px;
+
+    color: #747b89;
+
+    font-size: 10px;
+    font-weight: 600;
+
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.owner-name {
+    overflow: hidden;
+
+    color: #e4e7ec;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   CARD FOOTER
+========================================================= */
+
+.resort-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: 17px;
+    padding-top: 16px;
+
+    border-top: 1px solid #292e37;
+}
+
+.footer-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    color: #777f8d;
+
+    font-size: 12px;
+}
+
+.footer-label i {
+    color: #a1a7b2;
+
+    font-size: 15px;
+}
+
+.footer-price {
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   VIEW INDICATOR
+========================================================= */
+
+.view-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 28px;
+    height: 28px;
+
+    background: #20242c;
+
+    border: 1px solid #303640;
+
+    border-radius: 50%;
+
+    color: #9da4b0;
+
+    font-size: 14px;
+
+    transition:
+        background 0.25s ease,
+        color 0.25s ease,
+        transform 0.25s ease;
+}
+
+.resort-card:hover .view-indicator {
+    background: #ffffff;
+
+    color: #14171d;
+
+    transform: translateX(2px);
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.empty-state {
+    grid-column: 1 / -1;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 350px;
+
+    padding: 50px;
+
+    background: #171a21;
+
+    border: 1px solid #292e37;
+
+    border-radius: 18px;
+
+    text-align: center;
+}
+
+.empty-icon {
+    width: 60px;
+    height: 60px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 18px;
+
+    background: #20242c;
+
+    border: 1px solid #303640;
+
+    border-radius: 16px;
+
+    color: #8f97a5;
+
+    font-size: 25px;
+}
+
+.empty-state h3 {
+    margin: 0 0 8px;
+
+    color: #ffffff;
+
+    font-size: 19px;
+}
+
+.empty-state p {
+    margin: 0;
+
+    color: #777f8d;
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1200px) {
+
+    .resort-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+@media (max-width: 760px) {
+
+    .resort-page {
+        padding: 20px;
+    }
+
+    .resort-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 15px;
+    }
+
+    .header-left h2 {
+        font-size: 26px;
+    }
+
+    .resort-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .resort-image-container {
+        height: 230px;
+    }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 420px) {
+
+    .resort-page {
+        padding: 15px;
+    }
+
+    .resort-content {
+        padding: 16px;
+    }
+
+    .resort-image-container {
+        height: 210px;
+    }
+
+}
+
+</style>
+
+
+<div class="resort-page">
+
+    <!-- =========================================
+         HEADER
+    ========================================== -->
+
+    <div class="resort-header">
+
+        <div class="header-left">
+
+            <h2>
+                Resorts
+            </h2>
+
+            <p>
+                Explore and manage all registered resorts
+            </p>
+
+        </div>
+
+
+        <div class="resort-count">
+
+            <span class="count-dot"></span>
+
+            {{ data|length }} Resorts
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================
+         RESORT GRID
+    ========================================== -->
+
+    <div class="resort-grid">
+
+        {% for i in data %}
+
+        <div class="resort-card">
+
+
+            <!-- IMAGE -->
+
+            <div class="resort-image-container">
+
+                <img
+                    src="{{ i.resort.picture.url }}"
+                    alt="{{ i.resort.name }}"
+                    class="resort-image"
+                >
+
+
+                <div class="image-overlay"></div>
+
+
+                <!-- PRICE -->
+
+                <div class="price-badge">
+
+                    ₹{{ i.resort.pricing }}
+
+                    <small>
+                        / stay
+                    </small>
+
+                </div>
+
+
+                <!-- RESORT NAME -->
+
+                <div class="image-title">
+
+                    <h3>
+                        {{ i.resort.name }}
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <!-- CONTENT -->
+
+            <div class="resort-content">
+
+
+                <!-- OWNER -->
+
+                <div class="owner-box">
+
+                    <div class="owner-icon">
+
+                        <i class="mdi mdi-account-outline"></i>
+
+                    </div>
+
+
+                    <div class="owner-details">
+
+                        <span class="owner-label">
+                            Resort Owner
+                        </span>
+
+                        <span class="owner-name">
+                            {{ i.resort.owner.name }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- FOOTER -->
+
+                <div class="resort-footer">
+
+                    <div class="footer-label">
+
+                        <i class="mdi mdi-cash-multiple"></i>
+
+                        <span>
+                            Pricing
+                        </span>
+
+                    </div>
+
+
+                    <div style="display:flex; align-items:center; gap:12px;">
+
+                        <span class="footer-price">
+                            ₹{{ i.resort.pricing }}
+                        </span>
+
+                        <span class="view-indicator">
+                            <i class="mdi mdi-arrow-right"></i>
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        {% empty %}
+
+
+        <!-- EMPTY STATE -->
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+
+                <i class="mdi mdi-home-city-outline"></i>
+
+            </div>
+
+            <h3>
+                No resorts yet
+            </h3>
+
+            <p>
+                There are currently no registered resorts in the system.
+            </p>
+
+        </div>
+
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

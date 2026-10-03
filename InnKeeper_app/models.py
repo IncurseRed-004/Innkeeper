@@ -57,3 +57,5 @@ class Schedules(models.Model):
 class Booking(models.Model):
     customer = models.ForeignKey(Customer,on_delete=models.CASCADE,related_name='bookings')
     schedule = models.ForeignKey(Schedules,on_delete=models.CASCADE,related_name='bookings')
+    status = models.IntegerField(default=0)
+    time_data = models.DateField(auto_now=True)

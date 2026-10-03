@@ -36,3 +36,5 @@ def booking_history(request):
     return render(request,"customer/booking_history.html",{"history":history})
 
 
+
+

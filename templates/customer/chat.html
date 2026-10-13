@@ -1,0 +1,110 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Chat with Resort</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <style>
+        body {
+            background-color: #f5f6f8;
+        }
+
+        .chat-card {
+            border-radius: 16px;
+        }
+
+        .message-input {
+            resize: vertical;
+            min-height: 130px;
+        }
+
+        .btn-submit {
+            background-color: #212529;
+            color: white;
+            border: none;
+        }
+
+        .btn-submit:hover {
+            background-color: #424649;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100 py-4">
+        <div class="col-md-6 col-lg-5">
+
+            <div class="card chat-card shadow-sm border-0">
+                <div class="card-body p-4 p-md-5">
+
+                    <h3 class="text-center mb-2">
+                        Chat with Resort
+                    </h3>
+
+                    <p class="text-muted text-center mb-4">
+                        Send a message to the resort.
+                    </p>
+
+                    <hr class="mb-4">
+
+                    <p class="mb-4">
+                        Resort:
+                        <strong>
+                            {{ booking.schedule.facilities.resort.name }}
+                        </strong>
+                    </p>
+
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label for="message" class="form-label fw-semibold">
+                                Your Message
+                            </label>
+
+                            <textarea
+                                name="message"
+                                id="message"
+                                class="form-control message-input"
+                                placeholder="Type your message here..."
+                                required
+                            ></textarea>
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="btn btn-submit w-100 py-2"
+                        >
+                            Submit Message
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <a
+                            href="{% url 'booking_history' %}"
+                            class="btn btn-outline-secondary"
+                        >
+                            Back
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

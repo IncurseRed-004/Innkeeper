@@ -1,0 +1,41 @@
+{% extends 'owner/owner_base.html' %}
+
+{% block content %}
+
+
+<body class="bg-light">
+
+<div class="container mt-5">
+
+    <h3 class="mb-4">Customer Messages</h3>
+
+    <table class="table table-bordered table-striped table-hover bg-white">
+        <thead class="table-dark">
+            <tr>
+                <th>Resort Name</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for chat in data %}
+            <tr>
+                <td>{{ chat.resort.name }}</td>
+                <td>{{ chat.message }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="2" class="text-center">
+                    No messages found.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>
+
+{% endblock %}

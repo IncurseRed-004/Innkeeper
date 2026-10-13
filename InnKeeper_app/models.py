@@ -52,6 +52,7 @@ class Schedules(models.Model):
     facilities = models.ForeignKey(Facilities,on_delete=models.CASCADE,related_name = 'schedules')
     from_date = models.DateField()
     to_date = models.DateField()
+    schedule_status = models.BooleanField(default = 0)
 
 
 class Booking(models.Model):
@@ -59,3 +60,9 @@ class Booking(models.Model):
     schedule = models.ForeignKey(Schedules,on_delete=models.CASCADE,related_name='bookings')
     status = models.IntegerField(default=0)
     time_data = models.DateField(auto_now=True)
+
+class Chat(models.Model):
+    resort = models.ForeignKey(Resorts,on_delete=models.CASCADE,related_name='chats')
+    customer = models.ForeignKey(Customer,on_delete=models.CASCADE,related_name='chats')
+    message = models.TextField()
+    reply = models.TextField(blank=True,null =True)

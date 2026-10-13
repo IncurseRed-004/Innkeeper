@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 
 from InnKeeper_app.form import Customer_Form, Owner_Form, ResortForm, Facility_Form, Schedule_form
-from InnKeeper_app.models import Customer, Owner, Resorts, Facilities, Schedules, Booking
+from InnKeeper_app.models import Customer, Owner, Resorts, Facilities, Schedules, Booking, Chat
 
 
 def owner_dashboard(request):
@@ -169,3 +169,11 @@ def rejected(request, id):
     booking.status = 2
     booking.save()
     return redirect('booking_status')
+
+def display_message(request):
+    owner = Owner.objects.get(user = request.user)
+    data = Chat.objects.filter(resort__owner=owner)
+    return render(request,'owner/display_message.html',{'data':data})
+
+def reply_message(request,id):
+

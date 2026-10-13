@@ -12,10 +12,6 @@ urlpatterns = [
     path("owner_registration",views.owner_registration,name="owner_registration"),
     path('account_dashboard',views.account_dashboard,name='account_dashboard'),
 
-    path("view_details/<int:facility_id>",views.view_details,name="view_details"),
-    path('book_now/<int:id>',views.book_now,name="book_now"),
-    path('select_slot/<int:id>',views.select_slot,name='select_slot'),
-    path("booking_success",views.booking_success,name="booking_success"),
     path('base_landing',views.base_landing,name='base_landing'),
 
     #admin_views
@@ -32,6 +28,11 @@ urlpatterns = [
     path('customer_profile',customer_views.customer_profile,name="customer_profile"),
     path('edit_customer/<int:id>',customer_views.edit_customer,name="edit_customer"),
     path('booking_history',customer_views.booking_history,name="booking_history"),
+    path("view_details/<int:facility_id>",customer_views.view_details,name="view_details"),
+    path('book_now/<int:id>',customer_views.book_now,name="book_now"),
+    path('select_slot/<int:id>',customer_views.select_slot,name='select_slot'),
+    path("booking_success",customer_views.booking_success,name="booking_success"),
+    path('chat_with/<int:id>',customer_views.chat_with,name="chat_with"),
 
 
     #owner_views
@@ -50,4 +51,5 @@ urlpatterns = [
     path('booking_status',owner_views.booking_status,name='booking_status'),
     path('approved/<int:id>',owner_views.approved,name='approved'),
     path('rejected/<int:id>',owner_views.rejected,name='rejected'),
+    path("display_message",owner_views.display_message,name="display_message"),
 ]

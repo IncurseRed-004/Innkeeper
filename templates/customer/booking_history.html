@@ -198,6 +198,7 @@
 
                             <th>Status</th>
 
+                            <th>chat with</th>
                         </tr>
 
                     </thead>
@@ -286,6 +287,9 @@
                                 </span>
 </td>
 
+                    <td>
+                        <a href="{% url 'chat_with' booking.schedule.facilities.resort.id %}">message</a>
+                    </td>
 
                         </tr>
 

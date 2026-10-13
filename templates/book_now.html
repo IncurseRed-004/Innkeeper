@@ -143,10 +143,17 @@
                         </p>
 
                     </div>
-
-                    <a href="{% url 'select_slot' slot.id %}" class="book-btn">
+                    {% if slot.schedule_status == 0 %}
+                    <a href="{% url 'select_slot' slot.id %}"
+                       class="book-btn">
                         Select This Slot
                     </a>
+                    {% else %}
+                     <a href=""
+                       class="btn disabled">
+                        Not available
+                    </a>
+                    {% endif %}
 
                 </div>
 

@@ -175,5 +175,5 @@ def display_message(request):
     data = Chat.objects.filter(resort__owner=owner)
     return render(request,'owner/display_message.html',{'data':data})
 
-def reply_message(request,id):
+# def reply_message(request,id):
 

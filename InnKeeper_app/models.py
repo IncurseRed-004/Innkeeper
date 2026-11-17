@@ -66,3 +66,25 @@ class Chat(models.Model):
     customer = models.ForeignKey(Customer,on_delete=models.CASCADE,related_name='chats')
     message = models.TextField()
     reply = models.TextField(blank=True,null =True)
+
+
+
+
+
+
+
+
+
+
+
+
+class dept(models.Model):
+    name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=10)
+
+
+class Student(models.Model):
+    dept_data = models.ForeignKey("dept",on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+

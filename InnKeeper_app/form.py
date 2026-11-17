@@ -41,3 +41,7 @@ class Chat_form(forms.ModelForm):
     class Meta:
         model = Chat
         fields = ('message',)
+
+
+
+

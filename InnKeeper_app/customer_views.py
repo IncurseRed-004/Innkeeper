@@ -1,12 +1,14 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
 from InnKeeper_app.form import Customer_Form, Chat_form
 from InnKeeper_app.models import Customer, Resorts, Booking, Facilities, Schedules, Chat
 
-
+@login_required(login_url = 'Login')
 def customer_dashboard(request):
     return render(request,"customer/customer_base.html")
 
+@login_required(login_url = 'Login')
 def customer_profile(request):
     user_data = request.user
     print(user_data.id)
@@ -18,6 +20,7 @@ def customer_profile(request):
     # print(customer_data.address)
     return render(request,"customer/customer_profile.html",{"customer_data":customer_data})
 
+@login_required(login_url = 'Login')
 def edit_customer(request,id):
     data = Customer.objects.get(id =id)
     if request.method == "POST":
@@ -31,7 +34,7 @@ def edit_customer(request,id):
 
 
 
-
+@login_required(login_url = 'Login')
 def view_details(request,facility_id):
     details = Facilities.objects.get(id=facility_id)
 
@@ -40,11 +43,13 @@ def view_details(request,facility_id):
     else:
         return redirect("Login")
 
+@login_required(login_url = 'Login')
 def book_now(request,id):
     slots = Schedules.objects.filter(facilities=id)
     print(slots)
     return render(request,"book_now.html",{"slots":slots})
 
+@login_required(login_url = 'Login')
 def select_slot(request,id):
 
     print("Logged in user:", request.user)
@@ -69,18 +74,19 @@ def select_slot(request,id):
     return render(request,"select_slot.html",{"customer":customer_var,"slot":slot_var})
 
 
+@login_required(login_url = 'Login')
 def booking_success(request):
     return render(request,"booking_success.html")
 
 
-
+@login_required(login_url = 'Login')
 def booking_history(request):
     customer = Customer.objects.get(user = request.user)
     history = Booking.objects.filter(customer = customer)
     print(history)
     return render(request,"customer/booking_history.html",{"history":history})
 
-
+@login_required(login_url = 'Login')
 def chat_with(request,id):
     booking = Resorts.objects.get(id = id)
     print(booking)
@@ -100,5 +106,17 @@ def chat_with(request,id):
 
     return render(request,"customer/chat.html",{"booking":booking,"customer":customer})
 
+@login_required(login_url = 'Login')
+def view_chat(request):
+    customer = Customer.objects.get(user = request.user)
+    chat =  Chat.objects.filter(customer = customer)
+    return render(request,"customer/view_chat.html",{"chat":chat})
 
 
+# def view_owner_reply(request,id):
+    # resort = Resorts.objects.get(id=id)
+    #
+    # data = Chat.objects.filter(resort = resort)
+    #
+    # print(data.values('id', 'message', 'reply'))
+    # return render(request,"customer/booking_history.html",{"data":data})

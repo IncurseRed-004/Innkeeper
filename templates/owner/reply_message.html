@@ -1,0 +1,55 @@
+
+{% extends 'owner/owner_base.html' %}
+
+{% block content %}
+
+<style>
+    .reply-box {
+        max-width: 500px;
+        margin: 40px auto;
+    }
+
+    .reply-box h2 {
+        margin-bottom: 20px;
+        font-size: 24px;
+    }
+
+    .reply-box textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        resize: vertical;
+        margin-bottom: 15px;
+    }
+
+    .reply-box button {
+        background-color: #2563eb;
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .reply-box button:hover {
+        background-color: #1d4ed8;
+    }
+</style>
+
+<div class="reply-box">
+    <h2>Reply to Message</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <textarea name="reply"
+                  placeholder="Enter your reply"
+                  rows="5"
+                  required></textarea>
+
+        <button type="submit">Send Reply</button>
+    </form>
+</div>
+
+{% endblock %}

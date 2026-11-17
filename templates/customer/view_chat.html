@@ -1,0 +1,46 @@
+
+{% extends 'customer/customer_base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h2 class="mb-3">My Messages</h2>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Resort</th>
+                <th>My Message</th>
+                <th>Owner's Reply</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in chat %}
+            <tr>
+                <td>{{ item.resort.name }}</td>
+                <td>{{ item.message }}</td>
+
+
+                <td>
+                    {% if item.reply %}
+                        {{ item.reply }}
+                    {% else %}
+                        <span class="text-muted">No reply yet</span>
+                    {% endif %}
+                </td>
+
+
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="text-center">
+                    No messages found.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

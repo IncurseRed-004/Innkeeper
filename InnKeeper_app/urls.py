@@ -33,7 +33,7 @@ urlpatterns = [
     path('select_slot/<int:id>',customer_views.select_slot,name='select_slot'),
     path("booking_success",customer_views.booking_success,name="booking_success"),
     path('chat_with/<int:id>',customer_views.chat_with,name="chat_with"),
-
+    path('view_chat',customer_views.view_chat,name="view_chat"),
 
     #owner_views
     path("owner_dashboard",owner_views.owner_dashboard,name="owner_dashboard"),
@@ -52,4 +52,11 @@ urlpatterns = [
     path('approved/<int:id>',owner_views.approved,name='approved'),
     path('rejected/<int:id>',owner_views.rejected,name='rejected'),
     path("display_message",owner_views.display_message,name="display_message"),
+    path('reply_message/<int:id>',owner_views.reply_message,name="reply_message"),
+
+
+
+#   test
+    path("view_Student",views.view_Student,name="view_Student")
+
 ]

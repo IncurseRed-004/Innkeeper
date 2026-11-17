@@ -14,14 +14,27 @@
             <tr>
                 <th>Resort Name</th>
                 <th>Message</th>
+                <th>Respond</th>
             </tr>
         </thead>
 
         <tbody>
             {% for chat in data %}
             <tr>
+
                 <td>{{ chat.resort.name }}</td>
                 <td>{{ chat.message }}</td>
+                <td>
+                    {% if chat.reply %}
+                        <span>{{chat.reply}}</span>
+                    {% else %}
+                    <a href="{% url 'reply_message' chat.id %}"
+                       class="btn btn-primary btn-sm">
+                       Reply
+                    </a>
+                    {% endif %}
+                </td>
+
             </tr>
             {% empty %}
             <tr>

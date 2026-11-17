@@ -1,0 +1,2364 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>InnKeeper - Complete Project Documentation</title>
+<style>
+@page { size: A4; margin: 18mm 15mm; }
+body { font-family: 'Segoe UI', 'Calibri', Arial, sans-serif; font-size: 10.5pt;
+       line-height: 1.5; color: #1c1c1c; max-width: 100%; }
+h1 { font-size: 22pt; color: #8a3b12; border-bottom: 3px solid #d9743a;
+     padding-bottom: 8px; margin: 0 0 16px 0; }
+h2 { font-size: 15pt; color: #8a3b12; margin-top: 26px; border-bottom: 1px solid #e6cbbd;
+     padding-bottom: 4px; page-break-after: avoid; }
+h3 { font-size: 12.5pt; color: #a9552a; margin-top: 20px; page-break-after: avoid; }
+h4 { font-size: 11pt; color: #333; margin-top: 16px; page-break-after: avoid; }
+p, li { font-size: 10.5pt; }
+code { font-family: Consolas, 'Courier New', monospace; font-size: 9.5pt;
+       background: #f3f3f3; padding: 1px 4px; border-radius: 3px; color: #7a2c00; }
+pre { background: #f7f7f7; border: 1px solid #e2e2e2; border-left: 3px solid #d9743a;
+      padding: 10px 12px; border-radius: 3px; overflow-x: auto; page-break-inside: avoid; }
+pre code { background: none; padding: 0; font-size: 8.8pt; color: #222; line-height: 1.4; }
+table { border-collapse: collapse; width: 100%; margin: 10px 0 16px 0; font-size: 9pt;
+        page-break-inside: auto; }
+th { background: #f6e7dd; text-align: left; border: 1px solid #d9c3b4; padding: 6px 8px;
+     font-weight: 600; }
+td { border: 1px solid #e3d6cc; padding: 5px 8px; vertical-align: top; }
+tr { page-break-inside: avoid; }
+blockquote { border-left: 4px solid #e0b79c; margin: 12px 0; padding: 6px 14px;
+             background: #fdf7f3; color: #4a4a4a; }
+hr { border: none; border-top: 1px solid #ddd; margin: 22px 0; }
+a { color: #0b5cad; text-decoration: none; }
+strong { color: #111; }
+ul, ol { margin: 6px 0 10px 0; padding-left: 22px; }
+li { margin: 3px 0; }
+</style></head><body><h1 id="innkeeper-complete-project-documentation">InnKeeper — Complete Project Documentation</h1>
+<p><strong>Project:</strong> InnKeeper (resort / homestay booking platform)
+<strong>Repository:</strong> <code>C:\Users\ABHAY PADMANABHAN\PycharmProjects\InnKeeper</code>
+<strong>Framework:</strong> Django 6.1 · Python 3.13.7 · PostgreSQL
+<strong>Repository revision:</strong> commit <code>8e044d6</code> ("git push")
+<strong>Document generated:</strong> 17 November 2026
+<strong>Purpose:</strong> A complete, self-contained technical brief — data model, routes, views,
+templates/pages, business rules, known issues — intended to be handed to an AI assistant
+(Claude, Gemini, etc.) or a new developer.</p>
+<hr>
+<h2 id="table-of-contents">Table of contents</h2>
+<ol>
+<li>How to use this document</li>
+<li>Executive summary</li>
+<li>Tech stack and dependencies</li>
+<li>Repository layout</li>
+<li>Django configuration</li>
+<li>Data model
+   - 6.1 Entity–relationship diagram
+   - 6.2 Model reference
+   - 6.3 Relationship rules and cascade behaviour
+   - 6.4 Migration history
+   - 6.5 Demo / legacy models</li>
+<li>URL and route map</li>
+<li>Views — detailed behaviour
+   - 8.1 Core and authentication views
+   - 8.2 Customer views
+   - 8.3 Owner views
+   - 8.4 Admin views
+   - 8.5 Forms</li>
+<li>Templates and pages
+   - 9.1 Page inventory
+   - 9.2 Per-page details</li>
+<li>End-to-end user flows</li>
+<li>Business rules and status codes</li>
+<li>UI and design system</li>
+<li>Static and media files</li>
+<li>Running the project locally</li>
+<li>Known bugs and inconsistencies</li>
+<li>Security and production readiness</li>
+<li>Suggested improvements</li>
+<li>Appendix A — Python file inventory</li>
+<li>Appendix B — Git history</li>
+<li>Appendix C — Glossary</li>
+</ol>
+<hr>
+<h2 id="1-how-to-use-this-document">1. How to use this document</h2>
+<p>This file is the single source of truth for the InnKeeper codebase as it exists today.
+It is written to be read by a human <strong>or</strong> pasted into an AI assistant.</p>
+<ul>
+<li>Sections 6–9 are the important ones for understanding the system.</li>
+<li>Section 15 lists real defects with file/line references — useful if you are asking an AI to
+  "fix the bugs" or "review this project".</li>
+<li>Section 17 lists what is missing if you are asking an AI to "extend this project".</li>
+<li>All statements here were derived by reading the source, not from comments or assumptions.</li>
+</ul>
+<hr>
+<h2 id="2-executive-summary">2. Executive summary</h2>
+<p><strong>InnKeeper</strong> is a Django web application with a <strong>three-role</strong> model:</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Flag on <code>Login</code></th>
+<th>What they do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Customer</td>
+<td><code>is_customer = True</code></td>
+<td>Browse resorts, view details, book available date slots, see booking history, message resort owners</td>
+</tr>
+<tr>
+<td>Owner</td>
+<td><code>is_owner = True</code></td>
+<td>Register resorts, describe facilities, publish booking slots (date ranges), approve/reject customer bookings, reply to messages</td>
+</tr>
+<tr>
+<td>Admin / staff</td>
+<td><code>is_staff = True</code></td>
+<td>View and delete customers and owners, view all resorts; full access through the stock Django admin</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Core domain chain:</strong></p>
+<pre><code>Login (auth user) -&gt; Owner -&gt; Resorts -&gt; Facilities -&gt; Schedules -&gt; Booking &lt;- Customer
+                                 |
+                                 +-&gt; Chat &lt;- Customer
+</code></pre>
+<p>A resort is described by exactly one <code>Facilities</code> record (pool / kitchen / wifi / lawn / balcony
+booleans). Each facility owns many <code>Schedules</code>, which are the bookable date ranges
+(<code>from_date</code> … <code>to_date</code>). A customer books a schedule, producing a <code>Booking</code> whose <code>status</code>
+goes <code>0</code> (pending) → <code>1</code> (approved) or <code>2</code> (rejected).</p>
+<p><strong>Pages:</strong> a public marketing/landing page with a resort grid, separate customer / owner / admin
+dashboard shells (Corona Admin theme), plus form pages built with <code>crispy_forms</code>.</p>
+<p><strong>State of the project:</strong> functional prototype / academic project. It runs end-to-end for the main
+happy path, but has several real bugs (section 15), no tests, no permissions beyond
+<code>login_required</code>, and hard-coded development secrets.</p>
+<hr>
+<h2 id="3-tech-stack-and-dependencies">3. Tech stack and dependencies</h2>
+<p><strong>Runtime</strong></p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Language</td>
+<td>Python 3.13.7</td>
+</tr>
+<tr>
+<td>Framework</td>
+<td>Django 6.1</td>
+</tr>
+<tr>
+<td>Database</td>
+<td>PostgreSQL, database <code>innkeeper_main</code> at <code>127.0.0.1:5432</code></td>
+</tr>
+<tr>
+<td>DB driver</td>
+<td>psycopg2 2.9.12</td>
+</tr>
+<tr>
+<td>Auth</td>
+<td>Django's built-in auth with a <strong>custom user model</strong> (<code>InnKeeper_app.Login</code>)</td>
+</tr>
+<tr>
+<td>Templates</td>
+<td>Django template language, project-level <code>templates/</code> directory</td>
+</tr>
+<tr>
+<td>Forms</td>
+<td><code>django-crispy-forms</code> + <code>crispy-bootstrap5</code></td>
+</tr>
+<tr>
+<td>Debugging</td>
+<td><code>django-debug-toolbar</code> (installed and active)</td>
+</tr>
+<tr>
+<td>Front-end</td>
+<td>Bootstrap 5.3.8 (CDN), Bootstrap 5 (local vendor copy), jQuery, Corona Admin dashboard theme, custom CSS in the landing templates</td>
+</tr>
+<tr>
+<td>Time zone</td>
+<td><code>Asia/Kolkata</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Exact environment (<code>pip freeze</code> from <code>.venv</code>)</strong></p>
+<pre><code>asgiref==3.12.1
+crispy-bootstrap5==2026.9
+djangify==1.0.0
+Django==6.1
+django-crispy-forms==2.7
+django-debug-toolbar==8.0.0
+psycopg2==2.9.12
+sqlparse==0.6.0
+tzdata==2026.3
+</code></pre>
+<blockquote>
+<p>Note: there is <strong>no <code>requirements.txt</code></strong> in the repository; the list above is the
+authoritative dependency set.</p>
+</blockquote>
+<hr>
+<h2 id="4-repository-layout">4. Repository layout</h2>
+<pre><code>InnKeeper/
+├── manage.py                    Django entry point (settings module: InnKeeper_project.settings)
+├── main.py                      PyCharm boilerplate, unused
+├── .venv/                       local virtual environment (Python 3.13.7)
+├── .idea/                       PyCharm project files
+├── .git/
+│
+├── InnKeeper_project/           project package (configuration)
+│   ├── settings.py              all settings (see section 5)
+│   ├── urls.py                  root URLconf: /admin/, include(InnKeeper_app.urls), debug toolbar, media
+│   ├── asgi.py / wsgi.py        deployment entry points
+│
+├── InnKeeper_app/               the single Django app
+│   ├── models.py                9 models (section 6)
+│   ├── views.py                 core/auth views: landing, login, logout, registration, account routing
+│   ├── customer_views.py        customer dashboard, profile, booking, chat
+│   ├── owner_views.py           owner dashboard, resort CRUD, schedules, approvals, messages
+│   ├── admin_views.py           staff dashboard, customer/owner/resort listing
+│   ├── form.py                  ModelForms + registration form
+│   ├── urls.py                  all application routes (44 patterns)
+│   ├── admin.py                 registers models with Django admin
+│   ├── apps.py, tests.py        boilerplate (tests.py is empty)
+│   └── migrations/              0001 … 0012 (section 6.4)
+│
+├── templates/                   all HTML
+│   ├── Landing.html             public home page + resort grid
+│   ├── base_landing.html        public shell with {% block content %}
+│   ├── Login.html               login form
+│   ├── customer_page.html       customer registration
+│   ├── owner_page.html          owner registration
+│   ├── Dashboard.html           Corona Admin generic dashboard (not routed)
+│   ├── resort_details.html      resort detail page
+│   ├── book_now.html            slot list
+│   ├── select_slot.html         booking confirmation
+│   ├── booking_success.html     success screen
+│   ├── admin/                   admin_base.html + 5 pages
+│   ├── customer/                customer_base.html + 5 pages
+│   └── owner/                   owner_base.html + 12 pages
+│
+├── static/                      CSS/JS/vendors (Bootstrap, jQuery, Corona Admin assets, flags, etc.)
+└── media/                       user uploads; resorts/pictures/ (13 files)
+</code></pre>
+<hr>
+<h2 id="5-django-configuration-innkeeper_projectsettingspy">5. Django configuration (<code>InnKeeper_project/settings.py</code>)</h2>
+<p><strong>Installed apps</strong></p>
+<pre><code class="language-python">INSTALLED_APPS = [
+    'crispy_forms',
+    'crispy_bootstrap5',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'InnKeeper_app',
+    'debug_toolbar',
+]
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
+</code></pre>
+<p><strong>Middleware</strong> — the default Django stack plus <code>debug_toolbar.middleware.DebugToolbarMiddleware</code>
+at the end. <code>INTERNAL_IPS = ["127.0.0.1"]</code>.</p>
+<p><strong>Templates</strong> — <code>DIRS = [BASE_DIR / 'templates']</code>, <code>APP_DIRS = True</code>, context processors:
+<code>request</code>, <code>auth</code>, <code>messages</code>.</p>
+<p><strong>Database</strong></p>
+<pre><code class="language-python">DATABASES = {
+    &quot;default&quot;: {
+        &quot;ENGINE&quot;: &quot;django.db.backends.postgresql&quot;,
+        &quot;NAME&quot;: &quot;innkeeper_main&quot;,
+        &quot;USER&quot;: &quot;postgres&quot;,
+        &quot;PASSWORD&quot;: &quot;1234&quot;,
+        &quot;HOST&quot;: &quot;127.0.0.1&quot;,
+        &quot;PORT&quot;: &quot;5432&quot;,
+    }
+}
+</code></pre>
+<p><strong>Auth / security / other</strong></p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AUTH_USER_MODEL</code></td>
+<td><code>InnKeeper_app.Login</code></td>
+<td>custom user model, defined from the start</td>
+</tr>
+<tr>
+<td><code>SECRET_KEY</code></td>
+<td>hard-coded <code>django-insecure-...</code></td>
+<td>development only</td>
+</tr>
+<tr>
+<td><code>DEBUG</code></td>
+<td><code>True</code></td>
+<td>development only</td>
+</tr>
+<tr>
+<td><code>ALLOWED_HOSTS</code></td>
+<td><code>[]</code></td>
+<td>works only on localhost under <code>DEBUG</code></td>
+</tr>
+<tr>
+<td><code>LANGUAGE_CODE</code></td>
+<td><code>en-us</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>TIME_ZONE</code></td>
+<td><code>Asia/Kolkata</code></td>
+<td><code>USE_TZ = True</code></td>
+</tr>
+<tr>
+<td><code>STATIC_URL</code> / <code>STATICFILES_DIRS</code></td>
+<td><code>static/</code> / <code>BASE_DIR/static</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>MEDIA_URL</code> / <code>MEDIA_ROOT</code></td>
+<td><code>/media/</code> / <code>BASE_DIR/media</code></td>
+<td>served in <code>DEBUG</code> only</td>
+</tr>
+<tr>
+<td><code>MAILERS</code></td>
+<td>console backend</td>
+<td>Django 6.x email configuration style</td>
+</tr>
+<tr>
+<td>Password validators</td>
+<td>the four Django defaults</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Root URLconf (<code>InnKeeper_project/urls.py</code>)</strong></p>
+<pre><code class="language-python">urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('InnKeeper_app.urls')),
+] + debug_toolbar_urls()
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+</code></pre>
+<p>So: Django admin at <code>/admin/</code>, debug toolbar at <code>/__debug__/</code>, uploaded images at <code>/media/...</code>,
+and everything else in <code>InnKeeper_app/urls.py</code>.</p>
+<hr>
+<h2 id="6-data-model">6. Data model</h2>
+<p>All models live in <code>InnKeeper_app/models.py</code> (90 lines). Django's default <code>id</code>
+(<code>BigAutoField</code>) primary key is used everywhere and is not repeated below.</p>
+<h3 id="61-entityrelationship-diagram">6.1 Entity–relationship diagram</h3>
+<p>Mermaid (renders on GitHub and in many markdown viewers):</p>
+<pre><code class="language-mermaid">erDiagram
+    LOGIN ||--o| CUSTOMER : &quot;1:1 (related_name=customer)&quot;
+    LOGIN ||--o| OWNER    : &quot;1:1 (related_name=owner)&quot;
+    OWNER ||--o{ RESORTS  : &quot;1:N (related_name=resort)&quot;
+    RESORTS ||--o{ FACILITIES : &quot;1:N (related_name=facilities)&quot;
+    FACILITIES ||--o{ SCHEDULES : &quot;1:N (related_name=schedules)&quot;
+    CUSTOMER ||--o{ BOOKING  : &quot;1:N (related_name=bookings)&quot;
+    SCHEDULES ||--o{ BOOKING : &quot;1:N (related_name=bookings)&quot;
+    RESORTS ||--o{ CHAT    : &quot;1:N (related_name=chats)&quot;
+    CUSTOMER ||--o{ CHAT   : &quot;1:N (related_name=chats)&quot;
+    DEPT ||--o{ STUDENT    : &quot;1:N (demo model)&quot;
+</code></pre>
+<p>Plain-text version (for tools that do not render Mermaid):</p>
+<pre><code>Login (AbstractUser)
+ ├─1:1─ Customer ──1:N── Booking ──N:1── Schedules ──N:1── Facilities ──N:1── Resorts ──N:1── Owner ─1:1─ Login
+ ├─1:1─ Owner
+ └─     Chat ──N:1── Resorts
+        Chat ──N:1── Customer
+
+dept ──1:N── Student        (unrelated demo models)
+</code></pre>
+<h3 id="62-model-reference">6.2 Model reference</h3>
+<h4 id="login-custom-user-table-innkeeper_app_login"><code>Login</code> — custom user (table <code>InnKeeper_app_login</code>)</h4>
+<p>Inherits <strong><code>AbstractUser</code></strong>, so it also has <code>username</code>, <code>password</code>, <code>first_name</code>, <code>last_name</code>,
+<code>email</code>, <code>is_staff</code>, <code>is_active</code>, <code>is_superuser</code>, <code>date_joined</code>, <code>last_login</code>, <code>groups</code>,
+<code>user_permissions</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>is_owner</code></td>
+<td>BooleanField</td>
+<td>default <code>False</code>; set to <code>True</code> during owner registration</td>
+</tr>
+<tr>
+<td><code>is_customer</code></td>
+<td>BooleanField</td>
+<td>default <code>False</code>; set to <code>True</code> during customer registration</td>
+</tr>
+</tbody>
+</table>
+<p>Role resolution used everywhere: <code>user.is_customer</code> → customer dashboard,
+<code>user.is_owner</code> → owner dashboard, <code>user.is_staff</code> → admin dashboard.
+A user can technically hold more than one flag; the checks are ordered customer → owner → staff.</p>
+<h4 id="customer"><code>Customer</code></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user</code></td>
+<td>OneToOneField → <code>Login</code></td>
+<td><code>on_delete=CASCADE</code>, <code>related_name='customer'</code></td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>CharField(100)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>phone</code></td>
+<td>CharField(10)</td>
+<td>no country code, no validation beyond length</td>
+</tr>
+<tr>
+<td><code>email</code></td>
+<td>EmailField</td>
+<td>changed from CharField(100) in migration 0002</td>
+</tr>
+<tr>
+<td><code>address</code></td>
+<td>CharField(500)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><code>__str__</code> → <code>name</code>.</p>
+<h4 id="owner"><code>Owner</code></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user</code></td>
+<td>OneToOneField → <code>Login</code></td>
+<td><code>on_delete=CASCADE</code>, <code>related_name='owner'</code></td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>CharField(100)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>phone</code></td>
+<td>CharField(10)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>email</code></td>
+<td>CharField(100)</td>
+<td>intentionally/inconsistently a plain CharField (not EmailField)</td>
+</tr>
+</tbody>
+</table>
+<p><code>__str__</code> → <code>name</code>.</p>
+<h4 id="resorts"><code>Resorts</code></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>owner</code></td>
+<td>ForeignKey → <code>Owner</code></td>
+<td><code>CASCADE</code>, <code>related_name='resort'</code> (singular)</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>CharField(100)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>TextField(max_length=1000)</td>
+<td><code>max_length</code> is not enforced at DB level for TextField</td>
+</tr>
+<tr>
+<td><code>address</code></td>
+<td>CharField(500)</td>
+<td><code>null=True, blank=True</code></td>
+</tr>
+<tr>
+<td><code>location</code></td>
+<td>CharField(500)</td>
+<td><code>null=True, blank=True</code></td>
+</tr>
+<tr>
+<td><code>picture</code></td>
+<td>FileField</td>
+<td><code>upload_to='resorts/pictures/'</code>, <strong>required</strong></td>
+</tr>
+<tr>
+<td><code>pricing</code></td>
+<td>CharField(500)</td>
+<td>a string, not a number (rendered as <code>₹{{ pricing }}</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><code>__str__</code> → <code>name</code>.</p>
+<h4 id="facilities"><code>Facilities</code></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>resort</code></td>
+<td>ForeignKey → <code>Resorts</code></td>
+<td><code>CASCADE</code>, <code>related_name='facilities'</code></td>
+</tr>
+<tr>
+<td><code>pool</code></td>
+<td>BooleanField</td>
+<td>default <code>False</code></td>
+</tr>
+<tr>
+<td><code>kitchen</code></td>
+<td>BooleanField</td>
+<td>default <code>False</code></td>
+</tr>
+<tr>
+<td><code>wifi</code></td>
+<td>BooleanField</td>
+<td>default <code>False</code></td>
+</tr>
+<tr>
+<td><code>lawn</code></td>
+<td>BooleanField</td>
+<td>default <code>False</code></td>
+</tr>
+<tr>
+<td><code>balcony</code></td>
+<td>BooleanField</td>
+<td>default <code>False</code></td>
+</tr>
+</tbody>
+</table>
+<p>No <code>__str__</code>. In practice <strong>one Facilities row per resort</strong> is assumed (several views call
+<code>Facilities.objects.get(resort=...)</code>).</p>
+<h4 id="schedules-bookable-date-ranges"><code>Schedules</code> (bookable date ranges)</h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>facilities</code></td>
+<td>ForeignKey → <code>Facilities</code></td>
+<td><code>CASCADE</code>, <code>related_name='schedules'</code></td>
+</tr>
+<tr>
+<td><code>from_date</code></td>
+<td>DateField</td>
+<td></td>
+</tr>
+<tr>
+<td><code>to_date</code></td>
+<td>DateField</td>
+<td>no validation that <code>from_date &lt;= to_date</code></td>
+</tr>
+<tr>
+<td><code>schedule_status</code></td>
+<td>BooleanField</td>
+<td>default <code>0</code>; used as an integer flag: <code>0</code> = available, <code>1</code> = taken</td>
+</tr>
+</tbody>
+</table>
+<p>No <code>__str__</code>, no ordering.</p>
+<h4 id="booking"><code>Booking</code></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>customer</code></td>
+<td>ForeignKey → <code>Customer</code></td>
+<td><code>CASCADE</code>, <code>related_name='bookings'</code></td>
+</tr>
+<tr>
+<td><code>schedule</code></td>
+<td>ForeignKey → <code>Schedules</code></td>
+<td><code>CASCADE</code>, <code>related_name='bookings'</code></td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>IntegerField</td>
+<td>default <code>0</code>; <code>0</code> pending, <code>1</code> approved, <code>2</code> rejected</td>
+</tr>
+<tr>
+<td><code>time_data</code></td>
+<td>DateField</td>
+<td><code>auto_now=True</code> — stores the date of the <strong>last save</strong> (see section 15)</td>
+</tr>
+</tbody>
+</table>
+<p>No <code>__str__</code>. No unique constraint on <code>(customer, schedule)</code>.</p>
+<h4 id="chat-customer-resort-message-with-one-owner-reply"><code>Chat</code> (customer → resort message with one owner reply)</h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>resort</code></td>
+<td>ForeignKey → <code>Resorts</code></td>
+<td><code>CASCADE</code>, <code>related_name='chats'</code></td>
+</tr>
+<tr>
+<td><code>customer</code></td>
+<td>ForeignKey → <code>Customer</code></td>
+<td><code>CASCADE</code>, <code>related_name='chats'</code></td>
+</tr>
+<tr>
+<td><code>message</code></td>
+<td>TextField</td>
+<td>customer's text</td>
+</tr>
+<tr>
+<td><code>reply</code></td>
+<td>TextField</td>
+<td><code>blank=True, null=True</code>; owner's single reply</td>
+</tr>
+</tbody>
+</table>
+<p>No <code>__str__</code>, no created/updated timestamps, no read/unread state, no message threading.</p>
+<h3 id="63-relationship-rules-and-cascade-behaviour">6.3 Relationship rules and cascade behaviour</h3>
+<table>
+<thead>
+<tr>
+<th>Relationship</th>
+<th>Cardinality</th>
+<th>On delete</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Login</code> → <code>Customer</code></td>
+<td>1:1</td>
+<td>deleting the user deletes the customer profile</td>
+</tr>
+<tr>
+<td><code>Login</code> → <code>Owner</code></td>
+<td>1:1</td>
+<td>deleting the user deletes the owner profile</td>
+</tr>
+<tr>
+<td><code>Owner</code> → <code>Resorts</code></td>
+<td>1:N</td>
+<td>deleting an owner deletes <strong>all</strong> their resorts</td>
+</tr>
+<tr>
+<td><code>Resorts</code> → <code>Facilities</code></td>
+<td>1:N</td>
+<td>deleting a resort deletes its facilities</td>
+</tr>
+<tr>
+<td><code>Facilities</code> → <code>Schedules</code></td>
+<td>1:N</td>
+<td>cascade</td>
+</tr>
+<tr>
+<td><code>Schedules</code> → <code>Booking</code></td>
+<td>1:N</td>
+<td>deleting a slot deletes its bookings</td>
+</tr>
+<tr>
+<td><code>Customer</code> → <code>Booking</code></td>
+<td>1:N</td>
+<td>cascade</td>
+</tr>
+<tr>
+<td><code>Resorts</code> → <code>Chat</code></td>
+<td>1:N</td>
+<td>cascade</td>
+</tr>
+<tr>
+<td><code>Customer</code> → <code>Chat</code></td>
+<td>1:N</td>
+<td>cascade</td>
+</tr>
+</tbody>
+</table>
+<p>Consequence: deleting a resort silently removes its facilities, all schedules, all bookings on
+those schedules, and all chat messages about it.</p>
+<h3 id="64-migration-history">6.4 Migration history</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Name</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0001</td>
+<td><code>initial</code></td>
+<td>Creates <code>Login</code> (AbstractUser + <code>is_owner</code>, <code>is_customer</code>), <code>Customer</code> (email as CharField), <code>Owner</code></td>
+</tr>
+<tr>
+<td>0002</td>
+<td><code>alter_customer_email</code></td>
+<td><code>Customer.email</code> CharField(100) → EmailField</td>
+</tr>
+<tr>
+<td>0003</td>
+<td><code>resorts_facilities</code></td>
+<td>Creates <code>Resorts</code> and <code>Facilities</code></td>
+</tr>
+<tr>
+<td>0004</td>
+<td><code>rename_user_facilities_resort</code></td>
+<td>Renames <code>Facilities.user</code> → <code>Facilities.resort</code></td>
+</tr>
+<tr>
+<td>0005</td>
+<td><code>resorts_address_resorts_location</code></td>
+<td>Adds <code>Resorts.address</code> and <code>Resorts.location</code></td>
+</tr>
+<tr>
+<td>0006</td>
+<td><code>schedules</code></td>
+<td>Creates <code>Schedules</code></td>
+</tr>
+<tr>
+<td>0007</td>
+<td><code>booking</code></td>
+<td>Creates <code>Booking</code></td>
+</tr>
+<tr>
+<td>0008</td>
+<td><code>booking_status</code></td>
+<td>Adds <code>Booking.status</code></td>
+</tr>
+<tr>
+<td>0009</td>
+<td><code>booking_time_data</code></td>
+<td>Adds <code>Booking.time_data</code></td>
+</tr>
+<tr>
+<td>0010</td>
+<td><code>schedules_schedule_status</code></td>
+<td>Adds <code>Schedules.schedule_status</code></td>
+</tr>
+<tr>
+<td>0011</td>
+<td><code>chat</code></td>
+<td>Creates <code>Chat</code></td>
+</tr>
+<tr>
+<td>0012</td>
+<td><code>dept_student</code></td>
+<td>Creates demo models <code>dept</code> and <code>Student</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="65-demo-legacy-models">6.5 Demo / legacy models</h3>
+<p><code>dept</code> and <code>Student</code> (migration 0012) are unrelated to the booking domain — they look like
+classroom exercises:</p>
+<pre><code class="language-python">class dept(models.Model):
+    name  = models.CharField(max_length=100)
+    phone = models.CharField(max_length=10)
+
+class Student(models.Model):
+    dept_data = models.ForeignKey(&quot;dept&quot;, on_delete=models.CASCADE)
+    name      = models.CharField(max_length=100)
+    email     = models.EmailField()
+</code></pre>
+<p>They are reachable through <code>/view_Student</code> (a debug view that only prints to the console and
+returns <code>None</code>, i.e. it raises an error if visited) and through the Django admin. They can be
+removed safely together with that route and its migration.</p>
+<hr>
+<h2 id="7-url-and-route-map">7. URL and route map</h2>
+<p>All patterns are defined in <code>InnKeeper_app/urls.py</code>. "Auth" means the view is wrapped in
+<code>@login_required(login_url='Login')</code>; there is <strong>no role check</strong> anywhere — any logged-in user
+can open any protected page.</p>
+<h3 id="public-authentication-routing">Public / authentication / routing</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>View</th>
+<th>URL name</th>
+<th>Auth</th>
+<th>Template</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/</code></td>
+<td><code>views.list_resorts</code></td>
+<td><code>list_resorts</code></td>
+<td>No</td>
+<td><code>Landing.html</code></td>
+<td>Marketing home page + grid of all facilities/resorts</td>
+</tr>
+<tr>
+<td><code>/Login</code></td>
+<td><code>views.Login</code></td>
+<td><code>Login</code></td>
+<td>No</td>
+<td><code>Login.html</code></td>
+<td>Sign-in form (<code>uname</code>, <code>pass</code>), role-based redirect</td>
+</tr>
+<tr>
+<td><code>/Logout_view</code></td>
+<td><code>views.Logout_view</code></td>
+<td><code>Logout_view</code></td>
+<td>No</td>
+<td>—</td>
+<td><code>logout()</code> then redirect to <code>/Login</code></td>
+</tr>
+<tr>
+<td><code>/customer_registration</code></td>
+<td><code>views.customer_registration</code></td>
+<td><code>customer_registration</code></td>
+<td>No</td>
+<td><code>customer_page.html</code></td>
+<td>Create <code>Login(is_customer=True)</code> + <code>Customer</code></td>
+</tr>
+<tr>
+<td><code>/owner_registration</code></td>
+<td><code>views.owner_registration</code></td>
+<td><code>owner_registration</code></td>
+<td>No</td>
+<td><code>owner_page.html</code></td>
+<td>Create <code>Login(is_owner=True)</code> + <code>Owner</code></td>
+</tr>
+<tr>
+<td><code>/account_dashboard</code></td>
+<td><code>views.account_dashboard</code></td>
+<td><code>account_dashboard</code></td>
+<td>Yes</td>
+<td>—</td>
+<td>Re-authenticates and redirects by role</td>
+</tr>
+<tr>
+<td><code>/dashboard</code></td>
+<td><code>views.dashboard</code></td>
+<td><code>dashboard</code></td>
+<td>Yes</td>
+<td><code>Dashboard.html</code></td>
+<td>Generic Corona Admin dashboard (not linked from the UI)</td>
+</tr>
+<tr>
+<td><code>/base_landing</code></td>
+<td><code>views.base_landing</code></td>
+<td><code>base_landing</code></td>
+<td>No</td>
+<td><code>base_landing.html</code></td>
+<td>Renders the shell directly (debug/leftover)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="admin-staff">Admin / staff</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>View</th>
+<th>URL name</th>
+<th>Auth</th>
+<th>Template</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/admin_dashboard</code></td>
+<td><code>admin_views.admin_dashboard</code></td>
+<td><code>admin_dashboard</code></td>
+<td>Yes</td>
+<td><code>admin/admin_base.html</code></td>
+<td>Staff dashboard shell</td>
+</tr>
+<tr>
+<td><code>/view_customer</code></td>
+<td><code>admin_views.view_customer</code></td>
+<td><code>view_customer</code></td>
+<td>Yes</td>
+<td><code>admin/view_customer.html</code></td>
+<td>Table of all customers with delete link</td>
+</tr>
+<tr>
+<td><code>/delete_customer/&lt;int:id&gt;</code></td>
+<td><code>admin_views.delete_customer</code></td>
+<td><code>delete_customer</code></td>
+<td>Yes</td>
+<td>—</td>
+<td>Deletes customer; <strong>redirect is broken</strong> (see 15.1)</td>
+</tr>
+<tr>
+<td><code>/view_owner</code></td>
+<td><code>admin_views.view_owner</code></td>
+<td><code>view_owner</code></td>
+<td>Yes</td>
+<td><code>admin/view_owner.html</code></td>
+<td>Table of owners with update/delete</td>
+</tr>
+<tr>
+<td><code>/delete_owner/&lt;int:id&gt;</code></td>
+<td><code>admin_views.delete_owner</code></td>
+<td><code>delete_owner</code></td>
+<td>Yes</td>
+<td>—</td>
+<td>Deletes owner (+ resorts), redirects to <code>view_owner</code></td>
+</tr>
+<tr>
+<td><code>/update_owner/&lt;int:id&gt;</code></td>
+<td><code>admin_views.update_owner</code></td>
+<td><code>update_owner</code></td>
+<td>Yes</td>
+<td><code>admin/update_owner.html</code></td>
+<td>Edit owner name/phone/email</td>
+</tr>
+<tr>
+<td><code>/view_resorts</code></td>
+<td><code>admin_views.view_resorts</code></td>
+<td><code>view_resorts</code></td>
+<td>Yes</td>
+<td><code>admin/view_resorts.html</code></td>
+<td>Card grid of every resort, with owner and price</td>
+</tr>
+</tbody>
+</table>
+<h3 id="customer_1">Customer</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>View</th>
+<th>URL name</th>
+<th>Auth</th>
+<th>Template</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/customer_dashboard</code></td>
+<td><code>customer_views.customer_dashboard</code></td>
+<td><code>customer_dashboard</code></td>
+<td>Yes</td>
+<td><code>customer/customer_base.html</code></td>
+<td>Customer dashboard shell</td>
+</tr>
+<tr>
+<td><code>/customer_profile</code></td>
+<td><code>customer_views.customer_profile</code></td>
+<td><code>customer_profile</code></td>
+<td>Yes</td>
+<td><code>customer/customer_profile.html</code></td>
+<td>Profile card + edit link</td>
+</tr>
+<tr>
+<td><code>/edit_customer/&lt;int:id&gt;</code></td>
+<td><code>customer_views.edit_customer</code></td>
+<td><code>edit_customer</code></td>
+<td>Yes</td>
+<td><code>customer/edit_customer.html</code></td>
+<td>Edit name/phone/email/address</td>
+</tr>
+<tr>
+<td><code>/booking_history</code></td>
+<td><code>customer_views.booking_history</code></td>
+<td><code>booking_history</code></td>
+<td>Yes</td>
+<td><code>customer/booking_history.html</code></td>
+<td>Table of the user's bookings + status + chat link</td>
+</tr>
+<tr>
+<td><code>/view_details/&lt;int:facility_id&gt;</code></td>
+<td><code>customer_views.view_details</code></td>
+<td><code>view_details</code></td>
+<td>Yes</td>
+<td><code>resort_details.html</code></td>
+<td>Resort detail page (id = <strong>Facilities</strong> id)</td>
+</tr>
+<tr>
+<td><code>/book_now/&lt;int:id&gt;</code></td>
+<td><code>customer_views.book_now</code></td>
+<td><code>book_now</code></td>
+<td>Yes</td>
+<td><code>book_now.html</code></td>
+<td>Lists schedules of a facility (id = <strong>Facilities</strong> id)</td>
+</tr>
+<tr>
+<td><code>/select_slot/&lt;int:id&gt;</code></td>
+<td><code>customer_views.select_slot</code></td>
+<td><code>select_slot</code></td>
+<td>Yes</td>
+<td><code>select_slot.html</code></td>
+<td>Review + confirm booking (id = <strong>Schedules</strong> id)</td>
+</tr>
+<tr>
+<td><code>/booking_success</code></td>
+<td><code>customer_views.booking_success</code></td>
+<td><code>booking_success</code></td>
+<td>Yes</td>
+<td><code>booking_success.html</code></td>
+<td>Confirmation screen, link back to <code>/</code></td>
+</tr>
+<tr>
+<td><code>/chat_with/&lt;int:id&gt;</code></td>
+<td><code>customer_views.chat_with</code></td>
+<td><code>chat_with</code></td>
+<td>Yes</td>
+<td><code>customer/chat.html</code></td>
+<td>Send a message about a resort (id = <strong>Resorts</strong> id)</td>
+</tr>
+<tr>
+<td><code>/view_chat</code></td>
+<td><code>customer_views.view_chat</code></td>
+<td><code>view_chat</code></td>
+<td>Yes</td>
+<td><code>customer/view_chat.html</code></td>
+<td>Table of the user's messages and replies</td>
+</tr>
+</tbody>
+</table>
+<h3 id="owner_1">Owner</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>View</th>
+<th>URL name</th>
+<th>Auth</th>
+<th>Template</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/owner_dashboard</code></td>
+<td><code>owner_views.owner_dashboard</code></td>
+<td><code>owner_dashboard</code></td>
+<td>Yes</td>
+<td><code>owner/owner_base.html</code></td>
+<td>Owner dashboard shell</td>
+</tr>
+<tr>
+<td><code>/owner_profile</code></td>
+<td><code>owner_views.owner_profile</code></td>
+<td><code>owner_profile</code></td>
+<td>Yes</td>
+<td><code>owner/owner_profile.html</code></td>
+<td>Profile card + edit link</td>
+</tr>
+<tr>
+<td><code>/edit_owner/&lt;int:id&gt;</code></td>
+<td><code>owner_views.edit_owner</code></td>
+<td><code>edit_owner</code></td>
+<td>Yes</td>
+<td><code>owner/edit_owner.html</code></td>
+<td>Edit owner name/phone/email</td>
+</tr>
+<tr>
+<td><code>/resort_add</code></td>
+<td><code>owner_views.resort_add</code></td>
+<td><code>resort_add</code></td>
+<td>Yes</td>
+<td><code>owner/resort_add.html</code></td>
+<td>Create a resort → then redirects to facility form</td>
+</tr>
+<tr>
+<td><code>/resort_facility/&lt;int:resort_id&gt;/</code></td>
+<td><code>owner_views.resort_facility</code></td>
+<td><code>resort_facilities</code></td>
+<td>Yes</td>
+<td><code>owner/resort_facility.html</code></td>
+<td>Create the facilities row for that resort</td>
+</tr>
+<tr>
+<td><code>/my_resorts/</code></td>
+<td><code>owner_views.my_resorts</code></td>
+<td><code>my_resorts</code></td>
+<td>Yes</td>
+<td><code>owner/my_resorts.html</code></td>
+<td>Cards of the owner's resorts with actions</td>
+</tr>
+<tr>
+<td><code>/edit_resort/&lt;int:id&gt;/</code></td>
+<td><code>owner_views.edit_resort</code></td>
+<td><code>edit_resort</code></td>
+<td>Yes</td>
+<td><code>owner/edit_resort.html</code></td>
+<td>Edit resort (id = <strong>Resorts</strong> id)</td>
+</tr>
+<tr>
+<td><code>/edit_facilities/&lt;int:resort_id&gt;/</code></td>
+<td><code>owner_views.edit_facilities</code></td>
+<td><code>edit_facilities</code></td>
+<td>Yes</td>
+<td><code>owner/edit_facilities.html</code></td>
+<td>Edit facilities (id = <strong>Resorts</strong> id)</td>
+</tr>
+<tr>
+<td><code>/delete_resort/&lt;int:resort_id&gt;/</code></td>
+<td><code>owner_views.delete_resort</code></td>
+<td><code>delete_resort</code></td>
+<td>Yes</td>
+<td>—</td>
+<td>Delete resort (id = <strong>Resorts</strong> id)</td>
+</tr>
+<tr>
+<td><code>/add_schedules/&lt;int:id&gt;/</code></td>
+<td><code>owner_views.add_schedules</code></td>
+<td><code>add_schedules</code></td>
+<td>Yes</td>
+<td><code>owner/add_schedules.html</code></td>
+<td>Add a date range (id = <strong>Facilities</strong> id)</td>
+</tr>
+<tr>
+<td><code>/view_schedules/&lt;int:id&gt;</code></td>
+<td><code>owner_views.view_schedules</code></td>
+<td><code>view_schedules</code></td>
+<td>Yes</td>
+<td><code>owner/view_schedules.html</code></td>
+<td>Table of slots with delete (id = <strong>Facilities</strong> id)</td>
+</tr>
+<tr>
+<td><code>/delete_schedule/&lt;int:id&gt;</code></td>
+<td><code>owner_views.delete_schedule</code></td>
+<td><code>delete_schedule</code></td>
+<td>Yes</td>
+<td>—</td>
+<td>Delete a slot (id = <strong>Schedules</strong> id)</td>
+</tr>
+<tr>
+<td><code>/booking_status</code></td>
+<td><code>owner_views.booking_status</code></td>
+<td><code>booking_status</code></td>
+<td>Yes</td>
+<td><code>owner/booking_status.html</code></td>
+<td>All bookings on the owner's resorts; approve/reject</td>
+</tr>
+<tr>
+<td><code>/approved/&lt;int:id&gt;</code></td>
+<td><code>owner_views.approved</code></td>
+<td><code>approved</code></td>
+<td>Yes</td>
+<td>—</td>
+<td>Sets booking status = 1</td>
+</tr>
+<tr>
+<td><code>/rejected/&lt;int:id&gt;</code></td>
+<td><code>owner_views.rejected</code></td>
+<td><code>rejected</code></td>
+<td>Yes</td>
+<td>—</td>
+<td>Sets booking status = 2</td>
+</tr>
+<tr>
+<td><code>/display_message</code></td>
+<td><code>owner_views.display_message</code></td>
+<td><code>display_message</code></td>
+<td>Yes</td>
+<td><code>owner/display_message.html</code></td>
+<td>All messages about the owner's resorts</td>
+</tr>
+<tr>
+<td><code>/reply_message/&lt;int:id&gt;</code></td>
+<td><code>owner_views.reply_message</code></td>
+<td><code>reply_message</code></td>
+<td>Yes</td>
+<td><code>owner/reply_message.html</code></td>
+<td>Write the reply for one chat row</td>
+</tr>
+</tbody>
+</table>
+<h3 id="other">Other</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>View</th>
+<th>Auth</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/admin/</code></td>
+<td>Django admin site</td>
+<td>staff</td>
+<td>Stock Django admin (all models except <code>Booking</code>, <code>Chat</code>, <code>dept</code> are registered)</td>
+</tr>
+<tr>
+<td><code>/__debug__/</code></td>
+<td>debug toolbar</td>
+<td>—</td>
+<td>Debug toolbar endpoints</td>
+</tr>
+<tr>
+<td><code>/media/&lt;path&gt;</code></td>
+<td>static serve</td>
+<td>—</td>
+<td>Uploaded resort pictures (DEBUG only)</td>
+</tr>
+<tr>
+<td><code>/view_Student</code></td>
+<td><code>views.view_Student</code></td>
+<td>No</td>
+<td>Debug view: queries <code>Student</code> with <code>select_related</code>, prints, returns <code>None</code> → <strong>server error if visited</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Route inconsistencies worth knowing:</strong> some patterns end with a slash and some do not
+(<code>my_resorts/</code>, <code>edit_resort/&lt;id&gt;/</code> vs <code>booking_status</code>, <code>view_schedules/&lt;id&gt;</code>), and the
+<code>&lt;int:...&gt;</code> parameter means different things in different routes (facility id vs resort id vs
+schedule id) — see section 15.2.</p>
+<hr>
+<h2 id="8-views-detailed-behaviour">8. Views — detailed behaviour</h2>
+<h3 id="81-core-and-authentication-views-viewspy">8.1 Core and authentication views (<code>views.py</code>)</h3>
+<p><strong><code>landing_page(request)</code></strong> — renders <code>Landing.html</code> with no context. <strong>Not routed</strong> (<code>/</code> uses
+<code>list_resorts</code> instead).</p>
+<p><strong><code>list_resorts(request)</code></strong> — the public home page.</p>
+<pre><code class="language-python">facility = Facilities.objects.all()
+return render(request, &quot;Landing.html&quot;, {&quot;facility&quot;: facility})
+</code></pre>
+<p>The template iterates <code>{% for i in facility %}</code> and renders <code>i.resort.name</code>, <code>i.resort.picture.url</code>,
+<code>i.resort.pricing</code>, <code>i.resort.location</code>, <code>i.resort.address</code>, and links
+<code>view_details i.id</code> / <code>book_now i.id</code>. So the "resort cards" are really <strong>facility</strong> rows, and
+<code>i.id</code> is the <strong>Facilities</strong> primary key.</p>
+<p><strong><code>dashboard(request)</code></strong> — <code>@login_required</code>, renders the Corona Admin <code>Dashboard.html</code> with
+hard-coded demo content ("Henry Klein", revenue cards, etc.). Not linked anywhere.</p>
+<p><strong><code>base_landing(request)</code></strong> — renders <code>base_landing.html</code> directly (the shell normally used
+through <code>{% extends %}</code>). Leftover/debug.</p>
+<p><strong><code>Logout_view(request)</code></strong> — <code>logout(request)</code> then <code>redirect("Login")</code>.</p>
+<p><strong><code>Login(request)</code></strong> — accepts GET and POST.</p>
+<pre><code>POST: username = POST['uname']; password = POST['pass']
+      user = authenticate(username, password)
+      if user:
+          login(request, user)
+          if user.is_customer: -&gt; customer_dashboard
+          elif user.is_owner:  -&gt; owner_dashboard
+          elif user.is_staff:  -&gt; admin_dashboard
+          # (no else: page simply re-renders)
+      else: print(&quot;Invalid Credentials&quot;)
+render Login.html
+</code></pre>
+<p>Failures are only printed to the console — <strong>no user-visible error message</strong> (the
+<code>messages.info(...)</code> line is commented out).</p>
+<p><strong><code>account_dashboard(request)</code></strong> — <code>@login_required</code>; calls <code>login(request, user)</code> again
+(redundant) and redirects by role exactly like <code>Login</code>. Used by the "Account Dashboard" nav link
+on the landing page.</p>
+<p><strong><code>customer_registration(request)</code></strong></p>
+<pre><code>GET : show Login_form() + Customer_Form()
+POST: validate both -&gt;
+      cust = Login_form.save(commit=False); cust.is_customer = True; cust.save()
+      profile = Customer_Form.save(commit=False); profile.user = cust; profile.save()
+      redirect(&quot;Login&quot;)
+</code></pre>
+<p>Both forms are rendered together on <code>customer_page.html</code> via crispy.</p>
+<p><strong><code>owner_registration(request)</code></strong> — identical flow with <code>Owner_Form</code> and <code>is_owner = True</code>;
+renders <code>owner_page.html</code>. That page has no "register as customer" cross-link (the customer page
+links to owner registration, but not the reverse).</p>
+<p><strong><code>view_Student(request)</code></strong> — demo: <code>Student.objects.select_related("dept_data").all()</code>, prints
+<code>name</code> and <code>dept_data.name</code>. Returns <code>None</code>, which Django treats as an error.</p>
+<h3 id="82-customer-views-customer_viewspy">8.2 Customer views (<code>customer_views.py</code>)</h3>
+<p>Every view is <code>@login_required(login_url='Login')</code>.</p>
+<p><strong><code>customer_dashboard</code></strong> — renders <code>customer/customer_base.html</code> (dashboard shell with empty
+content block).</p>
+<p><strong><code>customer_profile</code></strong> — <code>Customer.objects.get(user=request.user)</code> → <code>customer_data</code>; renders the
+profile card.</p>
+<p><strong><code>edit_customer(request, id)</code></strong> — loads <code>Customer</code> by id, binds <code>Customer_Form</code> on POST,
+saves, redirects to <code>customer_profile</code>. Note: the <code>id</code> in the URL is not checked against the
+logged-in user.</p>
+<p><strong><code>view_details(request, facility_id)</code></strong> — <code>Facilities.objects.get(id=facility_id)</code> → <code>details</code>;
+renders <code>resort_details.html</code>. Because it is <code>login_required</code>, anonymous visitors clicking
+"Details" on the landing page are bounced to the login screen.</p>
+<p><strong><code>book_now(request, id)</code></strong> — <code>Schedules.objects.filter(facilities=id)</code> → <code>slots</code>; renders
+<code>book_now.html</code>, which shows each slot's <code>from_date</code> / <code>to_date</code> and either a "Select This Slot"
+link (when <code>schedule_status == 0</code>) or a disabled "Not available" label.</p>
+<p><strong><code>select_slot(request, id)</code></strong></p>
+<pre><code>GET : customer = Customer.objects.get(user=request.user)
+      slot     = Schedules.objects.get(id=id)
+      render select_slot.html with {customer, slot}
+POST: booking = Booking(); booking.customer = customer; booking.schedule = slot; booking.save()
+      slot.schedule_status = 1; slot.save()
+      redirect(&quot;booking_success&quot;)
+</code></pre>
+<p>This is the only place a <code>Booking</code> is created. There is <strong>no server-side re-check</strong> that the slot
+is still free, and no uniqueness constraint, so two concurrent submits can both book the slot.</p>
+<p><strong><code>booking_success</code></strong> — static success page with a link back to <code>/</code>.</p>
+<p><strong><code>booking_history</code></strong> — <code>Booking.objects.filter(customer=customer)</code> → <code>history</code>; the template renders
+resort name, location, dates, price, a status label (pending / Confirmed / rejected) and a
+"message" link to <code>chat_with booking.schedule.facilities.resort.id</code>.</p>
+<p><strong><code>chat_with(request, id)</code></strong></p>
+<pre><code>resort   = Resorts.objects.get(id=id)          # named &quot;booking&quot; in the code
+customer = Customer.objects.get(user=request.user)
+POST: Chat(customer=customer, resort=resort, message=POST['message']).save()
+      redirect(&quot;booking_history&quot;)
+GET : render customer/chat.html {booking: resort, customer}
+</code></pre>
+<p><strong><code>view_chat</code></strong> — <code>Chat.objects.filter(customer=customer)</code>; table of resort / message / reply
+("No reply yet" when empty).</p>
+<h3 id="83-owner-views-owner_viewspy">8.3 Owner views (<code>owner_views.py</code>)</h3>
+<p><strong><code>owner_dashboard</code></strong> — renders <code>owner/owner_base.html</code>.</p>
+<p><strong><code>owner_profile</code></strong> — <code>Owner.objects.get(user=request.user)</code> → profile card.</p>
+<p><strong><code>edit_owner(request, id)</code></strong> — <code>Owner_Form(instance=...)</code>, save, redirect <code>owner_profile</code>.</p>
+<p><strong><code>resort_add</code></strong></p>
+<pre><code>owner = Owner.objects.get(user=request.user)
+POST: ResortForm(request.POST, request.FILES)
+      resort = form.save(commit=False); resort.owner = owner; resort.save()
+      redirect(&quot;resort_facilities&quot;, resort_id=resort.id)
+</code></pre>
+<p>Files (<code>picture</code>) require the form to be multipart — the template sets
+<code>enctype="multipart/form-data"</code>.</p>
+<p><strong><code>resort_facility(request, resort_id)</code></strong> — <code>Facility_Form</code> (all facility booleans), attaches
+<code>facilities.resort = resort</code>, saves, redirects to <code>owner_dashboard</code>.
+(Note: it does <strong>not</strong> redirect to <code>my_resorts</code> and the form is not pre-filled.)</p>
+<p><strong><code>edit_resort(request, id)</code></strong> — deliberately scoped: <code>Resorts.objects.get(id=id, owner=owner)</code>,
+so an owner cannot edit another owner's resort by URL. Redirects to <code>my_resorts</code>.</p>
+<p><strong><code>edit_facilities(request, resort_id)</code></strong> — <code>Resorts.objects.get(id=resort_id)</code> <strong>without</strong> the
+owner filter, then <code>Facilities.objects.get(resort=resort)</code> (raises if there is more than one).
+Redirects to <code>my_resorts</code>.</p>
+<p><strong><code>delete_resort(request, resort_id)</code></strong> — scoped by owner, deletes, redirects to <code>my_resorts</code>.</p>
+<p><strong><code>my_resorts</code></strong> — <code>Facilities.objects.filter(resort__owner=owner)</code> → <code>facilities</code>; cards show the
+resort image, name, description, address, location, price, facility checkmarks, and action links
+(Edit Resort, Edit Facilities, add Schedule, view schedules, Delete Resort).</p>
+<p><strong><code>add_schedules(request, id)</code></strong> — <code>Facilities.objects.get(id=id)</code>; <code>Schedule_form</code>
+(from_date, to_date) → attach <code>facilities</code>, save, redirect <code>my_resorts</code>.</p>
+<p><strong><code>view_schedules(request, id)</code></strong> — <code>Schedules.objects.filter(facilities=id)</code>; table with delete.</p>
+<p><strong><code>delete_schedule(request, id)</code></strong> — deletes the <code>Schedules</code> row (and, by cascade, any bookings on it).</p>
+<p><strong><code>booking_status</code></strong> — <code>Booking.objects.filter(schedule__facilities__resort__owner=owner)</code>; the
+template shows customer name, resort, <code>time_data</code>, from/to dates, and either
+approve/reject buttons (status 0), "approved" (1) or "rejected" (2).</p>
+<p><strong><code>approved(request, id)</code></strong> — <code>booking.status = 1; save()</code> → redirect <code>booking_status</code>.
+<strong><code>rejected(request, id)</code></strong> — <code>booking.status = 2; save()</code>. Neither verifies that the booking
+belongs to the requesting owner.</p>
+<p><strong><code>display_message</code></strong> — <code>Chat.objects.filter(resort__owner=owner)</code>; table of resort, message and
+either the existing reply or a "Reply" button.</p>
+<p><strong><code>reply_message(request, id)</code></strong> — on POST sets <code>chat.reply = POST['reply']</code>, saves, redirects to
+<code>display_message</code>.</p>
+<h3 id="84-admin-views-admin_viewspy">8.4 Admin views (<code>admin_views.py</code>)</h3>
+<p>All are <code>@login_required</code> — <strong>there is no <code>is_staff</code> check</strong>, so any authenticated user can use
+these pages if they know the URL.</p>
+<p><strong><code>admin_dashboard</code></strong> — renders <code>admin/admin_base.html</code>.
+<strong><code>view_customer</code></strong> — all customers in a table with delete buttons.
+<strong><code>delete_customer(request, id)</code></strong> — deletes, then <code>redirect('admin/view_customer.html')</code>, which is
+not a valid URL name → <code>NoReverseMatch</code>.
+<strong><code>view_owner</code></strong> — all owners with update/delete.
+<strong><code>delete_owner(request, id)</code></strong> — deletes the owner (cascading to their resorts) → <code>view_owner</code>.
+<strong><code>update_owner(request, id)</code></strong> — <code>Owner_Form</code> bound to the instance, saves → <code>view_owner</code>.
+<strong><code>view_resorts</code></strong> — <code>Facilities.objects.all()</code> → card grid showing resort image, name, owner name and price.</p>
+<h3 id="85-forms-innkeeper_appformpy">8.5 Forms (<code>InnKeeper_app/form.py</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Form</th>
+<th>Base</th>
+<th>Model</th>
+<th>Fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Login_form</code></td>
+<td><code>UserCreationForm</code></td>
+<td><code>Login</code></td>
+<td><code>username</code>, <code>password1</code>, <code>password2</code></td>
+</tr>
+<tr>
+<td><code>Customer_Form</code></td>
+<td><code>ModelForm</code></td>
+<td><code>Customer</code></td>
+<td><code>name</code>, <code>phone</code>, <code>email</code>, <code>address</code></td>
+</tr>
+<tr>
+<td><code>Owner_Form</code></td>
+<td><code>ModelForm</code></td>
+<td><code>Owner</code></td>
+<td><code>name</code>, <code>phone</code>, <code>email</code></td>
+</tr>
+<tr>
+<td><code>ResortForm</code></td>
+<td><code>ModelForm</code></td>
+<td><code>Resorts</code></td>
+<td><code>name</code>, <code>description</code>, <code>address</code>, <code>location</code>, <code>picture</code>, <code>pricing</code></td>
+</tr>
+<tr>
+<td><code>Facility_Form</code></td>
+<td><code>ModelForm</code></td>
+<td><code>Facilities</code></td>
+<td><code>"__all__"</code> minus <code>resort</code> (the five booleans)</td>
+</tr>
+<tr>
+<td><code>Schedule_form</code></td>
+<td><code>ModelForm</code></td>
+<td><code>Schedules</code></td>
+<td><code>from_date</code>, <code>to_date</code></td>
+</tr>
+<tr>
+<td><code>Chat_form</code></td>
+<td><code>ModelForm</code></td>
+<td><code>Chat</code></td>
+<td><code>message</code> — <strong>defined but unused</strong> (chat page uses a raw <code>&lt;textarea&gt;</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>All forms are rendered with <code>{{ form|crispy }}</code> (Bootstrap 5 pack) inside <code>owner/</code>, <code>customer/</code>
+and <code>admin/</code> base templates.</p>
+<hr>
+<h2 id="9-templates-and-pages">9. Templates and pages</h2>
+<p>31 HTML files. Three dashboard "shell" templates are very large (~69–70 KB) because the whole
+Corona Admin CSS is embedded in them; the actual page content lives in the <code>{% block content %}</code>
+of the child templates.</p>
+<h3 id="91-page-inventory">9.1 Page inventory</h3>
+<table>
+<thead>
+<tr>
+<th>Template</th>
+<th>Extends</th>
+<th>Purpose</th>
+<th>Key context</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Landing.html</code></td>
+<td>—</td>
+<td>Public home: hero carousel, "Featured", resort grid, contact block, footer</td>
+<td><code>facility</code></td>
+</tr>
+<tr>
+<td><code>base_landing.html</code></td>
+<td>—</td>
+<td>Public shell: header/nav + <code>{% block content %}</code> + footer. Used by booking pages</td>
+<td><code>facility</code> (for its own grid)</td>
+</tr>
+<tr>
+<td><code>Login.html</code></td>
+<td>—</td>
+<td>Standalone sign-in card</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>customer_page.html</code></td>
+<td>—</td>
+<td>Standalone customer registration (crispy)</td>
+<td><code>login_data</code>, <code>data_key</code></td>
+</tr>
+<tr>
+<td><code>owner_page.html</code></td>
+<td>—</td>
+<td>Standalone owner registration (crispy)</td>
+<td><code>login_data</code>, <code>data_key</code></td>
+</tr>
+<tr>
+<td><code>Dashboard.html</code></td>
+<td>—</td>
+<td>Generic Corona Admin dashboard, not routed</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>resort_details.html</code></td>
+<td><code>base_landing.html</code></td>
+<td>Resort detail + facilities badges + Book Now</td>
+<td><code>details</code></td>
+</tr>
+<tr>
+<td><code>book_now.html</code></td>
+<td><code>base_landing.html</code></td>
+<td>Slot cards with Select / Not available</td>
+<td><code>slots</code></td>
+</tr>
+<tr>
+<td><code>select_slot.html</code></td>
+<td><code>base_landing.html</code></td>
+<td>Booking summary + Confirm</td>
+<td><code>customer</code>, <code>slot</code></td>
+</tr>
+<tr>
+<td><code>booking_success.html</code></td>
+<td><code>base_landing.html</code></td>
+<td>Success message</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>admin/admin_base.html</code></td>
+<td>—</td>
+<td>Admin shell: sidebar (Customer, Owner, view resorts, Logout)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>admin/view_customer.html</code></td>
+<td>admin base</td>
+<td>Customer table + delete</td>
+<td><code>data</code></td>
+</tr>
+<tr>
+<td><code>admin/view_owner.html</code></td>
+<td>admin base</td>
+<td>Owner table + update/delete</td>
+<td><code>data</code></td>
+</tr>
+<tr>
+<td><code>admin/update_owner.html</code></td>
+<td>admin base</td>
+<td>Crispy owner form</td>
+<td><code>form</code></td>
+</tr>
+<tr>
+<td><code>admin/view_resorts.html</code></td>
+<td>admin base</td>
+<td>Resort card grid with owner and price</td>
+<td><code>data</code></td>
+</tr>
+<tr>
+<td><code>customer/customer_base.html</code></td>
+<td>—</td>
+<td>Customer shell: sidebar (HOME, Bookings history, chats), topbar</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>customer/customer_profile.html</code></td>
+<td>customer base</td>
+<td>Profile card + Edit Profile</td>
+<td><code>customer_data</code></td>
+</tr>
+<tr>
+<td><code>customer/edit_customer.html</code></td>
+<td>customer base</td>
+<td>Crispy customer form</td>
+<td><code>form</code></td>
+</tr>
+<tr>
+<td><code>customer/booking_history.html</code></td>
+<td>customer base</td>
+<td>Bookings table with status + chat link</td>
+<td><code>history</code></td>
+</tr>
+<tr>
+<td><code>customer/chat.html</code></td>
+<td>— (standalone)</td>
+<td>Message composer</td>
+<td><code>booking</code> (a Resort), <code>customer</code></td>
+</tr>
+<tr>
+<td><code>customer/view_chat.html</code></td>
+<td>customer base</td>
+<td>Messages and owner replies table</td>
+<td><code>chat</code></td>
+</tr>
+<tr>
+<td><code>owner/owner_base.html</code></td>
+<td>—</td>
+<td>Owner shell: sidebar (My resorts, HOME, resort status, messages), "+ ADD PROPERTIES"</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>owner/owner_profile.html</code></td>
+<td>owner base</td>
+<td>Profile card + Edit Profile</td>
+<td><code>owner_data</code></td>
+</tr>
+<tr>
+<td><code>owner/edit_owner.html</code></td>
+<td>owner base</td>
+<td>Crispy owner form</td>
+<td><code>form</code></td>
+</tr>
+<tr>
+<td><code>owner/resort_add.html</code></td>
+<td>owner base</td>
+<td>Crispy resort form (multipart)</td>
+<td><code>form</code></td>
+</tr>
+<tr>
+<td><code>owner/resort_facility.html</code></td>
+<td>owner base</td>
+<td>Crispy facilities form ("Add Facilities")</td>
+<td><code>form</code> (and <code>resort</code>, unused by the view)</td>
+</tr>
+<tr>
+<td><code>owner/my_resorts.html</code></td>
+<td>owner base</td>
+<td>Resort cards + facility list + action links</td>
+<td><code>facilities</code></td>
+</tr>
+<tr>
+<td><code>owner/edit_resort.html</code></td>
+<td>owner base</td>
+<td>Crispy resort form (multipart)</td>
+<td><code>form</code>, <code>resort</code></td>
+</tr>
+<tr>
+<td><code>owner/edit_facilities.html</code></td>
+<td>owner base</td>
+<td>Crispy facilities form</td>
+<td><code>form</code></td>
+</tr>
+<tr>
+<td><code>owner/add_schedules.html</code></td>
+<td>owner base</td>
+<td>Crispy schedule form</td>
+<td><code>form</code></td>
+</tr>
+<tr>
+<td><code>owner/view_schedules.html</code></td>
+<td>owner base</td>
+<td>Slot table + delete</td>
+<td><code>schedules</code></td>
+</tr>
+<tr>
+<td><code>owner/booking_status.html</code></td>
+<td>owner base</td>
+<td>Bookings table + approve/reject</td>
+<td><code>booking</code></td>
+</tr>
+<tr>
+<td><code>owner/display_message.html</code></td>
+<td>owner base</td>
+<td>Messages table + Reply link</td>
+<td><code>data</code></td>
+</tr>
+<tr>
+<td><code>owner/reply_message.html</code></td>
+<td>owner base</td>
+<td>Reply textarea</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="92-per-page-details">9.2 Per-page details</h3>
+<h4 id="landing-page-landinghtml">Landing page — <code>/</code> (<code>Landing.html</code>)</h4>
+<ul>
+<li><strong>Header nav:</strong> logo "INNKeeper"; links Hideaway, Resorts, <strong>Account Dashboard</strong>
+  (<code>account_dashboard</code>), <strong>Logout</strong> (<code>Logout_view</code>), <strong>SignUp/LogIn</strong> (<code>Login</code>). The dashboard and
+  logout links are always rendered — there is no <code>{% if user.is_authenticated %}</code> guard.</li>
+<li><strong>Hero carousel:</strong> three slides with hard-coded city captions (Toronto, Melbourne, Miami).</li>
+<li><strong>Featured section:</strong> static placeholder image + accordion ("Best useful links?", …) with
+  template-author text.</li>
+<li><strong>Properties section:</strong> heading "We Provide The Best Resorts and Properties You Like", then a
+  responsive grid over <code>facility</code>: image (<code>i.resort.picture.url</code>), price badge, resort name,
+  location and address with Material Design icons, and two actions — <strong>Details</strong>
+  (<code>view_details i.id</code>) and <strong>Book</strong> (<code>book_now i.id</code>).</li>
+<li><strong>Contact section:</strong> Google Maps iframe (Miami), phone <code>010-020-0340</code>, email
+  <code>info@Resort.co</code>, and a contact <code>&lt;form action="" method="post"&gt;</code> with <code>name</code>, <code>email</code>,
+  <code>subject</code>, <code>message</code> — <strong>not wired to any view</strong> (posts back to <code>/</code>, which ignores it).</li>
+<li>Footer with "Copyright © 2045 InnKeeper Co., Ltd." (template placeholder).</li>
+</ul>
+<h4 id="shared-public-shell-base_landinghtml">Shared public shell (<code>base_landing.html</code>)</h4>
+<p>Same nav as the landing page, except the dashboard link points to <code>customer_dashboard</code>, and
+"Contact Us" appears instead of "Logout". Contains <code>{% block content %}</code> where all booking pages
+render. Its own resort grid (with <code>view_details</code> / no Book link) plus the full contact section is
+still present but its banner/featured/contact blocks are commented out.</p>
+<h4 id="login-login-loginhtml">Login — <code>/Login</code> (<code>Login.html</code>)</h4>
+<p>Standalone Bootstrap card: heading "Please sign in", two inputs (<code>uname</code>, <code>pass</code>), Login button,
+and "Don't have an account? Register" → <code>customer_registration</code>. Page <code>&lt;title&gt;</code> is still the
+Bootstrap demo default.</p>
+<h4 id="customer-registration-customer_registration-customer_pagehtml">Customer registration — <code>/customer_registration</code> (<code>customer_page.html</code>)</h4>
+<p>Standalone Bootstrap page ("INNKEEPER" brand, "Update your information" title). Renders
+<code>{{ login_data|crispy }}</code> (username + both passwords) and <code>{{ data_key|crispy }}</code> (name, phone,
+email, address) in one form; button "Save Changes". Bottom link: "Do you want to list your
+Resorts? <strong>Register as an Owner</strong>" → <code>owner_registration</code>.</p>
+<h4 id="owner-registration-owner_registration-owner_pagehtml">Owner registration — <code>/owner_registration</code> (<code>owner_page.html</code>)</h4>
+<p>Same layout with the brand "InnKeeper" and subtitle "Update your account information"; renders
+<code>login_data</code> (username/passwords) + <code>data_key</code> (name, phone, email). No link back to customer
+registration.</p>
+<h4 id="resort-details-view_detailsfacility_id-resort_detailshtml">Resort details — <code>/view_details/&lt;facility_id&gt;</code> (<code>resort_details.html</code>)</h4>
+<p>Two-column card: resort picture (left); right side shows name, <code>₹{{ details.resort.pricing }}</code>,
+description, Address, Location, a "Facilities" heading and green badges for each enabled boolean
+(Pool / Kitchen / WiFi / Lawn / Balcony), inside <code>{% for facility in details.resort.facilities.all %}</code>.
+The <strong>Book Now</strong> button sits inside that loop, so it is repeated once per facilities row, and it
+links with <code>facility.id</code>.</p>
+<blockquote>
+<p>This template has structural HTML damage: a stray <code>&lt;/head&gt;&lt;body&gt;</code> inside the content block and a
+dangling <code>--&gt;</code> at the end of the file.</p>
+</blockquote>
+<h4 id="slot-list-book_nowfacility_id-book_nowhtml">Slot list — <code>/book_now/&lt;facility_id&gt;</code> (<code>book_now.html</code>)</h4>
+<p>Heading "Select Your Booking Slot"; a card per schedule with calendar icon, "From"/"To" dates and
+either <strong>Select This Slot</strong> (<code>select_slot slot.id</code>) or a disabled "Not available" label when
+<code>slot.schedule_status != 0</code>. Empty state: "No slots available".</p>
+<h4 id="booking-confirmation-select_slotschedule_id-select_slothtml">Booking confirmation — <code>/select_slot/&lt;schedule_id&gt;</code> (<code>select_slot.html</code>)</h4>
+<p>"Confirm Booking" heading. Three info boxes: <strong>Customer Details</strong> (name, phone, email, address),
+<strong>Selected Slot</strong> (from/to), <strong>Resort Details</strong> (name, location, address, pricing, read via
+<code>slot.facilities.resort.*</code>). A POST form with <code>{% csrf_token %}</code> and a "Confirm Booking" button,
+plus a "Back to Slot Selection" link that uses <code>javascript:history.back()</code>.</p>
+<h4 id="booking-success-booking_success-booking_successhtml">Booking success — <code>/booking_success</code> (<code>booking_success.html</code>)</h4>
+<p>Centered check-mark card: "Booking Successful!", thank-you text, note that the user will be
+redirected, and a "Go to Landing Page" button (<code>list_resorts</code>). No actual timed redirect is
+implemented.</p>
+<h4 id="customer-dashboard-shell-customercustomer_basehtml">Customer dashboard shell (<code>customer/customer_base.html</code>)</h4>
+<p>Corona Admin layout: sidebar with "HOME" (<code>list_resorts</code>), "Bookings / History"
+(<code>booking_history</code>), "chats" (<code>view_chat</code>), plus a large amount of unused demo navigation
+(Buttons, Dropdowns, Typography, Form Elements, Icons, Blank Page, 404, 500, Login, Register).
+Topbar with search field, notifications, profile. Content block empty — the dashboard is just the
+shell.</p>
+<h4 id="customer-profile-customercustomer_profilehtml">Customer profile (<code>customer/customer_profile.html</code>)</h4>
+<p>Avatar circle with the first letter of the name, name, and read-only rows for Name, Email, Phone,
+address; "Edit Profile" button → <code>edit_customer customer_data.id</code>.</p>
+<h4 id="edit-customer-customeredit_customerhtml">Edit customer (<code>customer/edit_customer.html</code>)</h4>
+<p><code>{{ form|crispy }}</code> + "save" button. 10 lines; unstyled relative to the theme.</p>
+<h4 id="booking-history-customerbooking_historyhtml">Booking history (<code>customer/booking_history.html</code>)</h4>
+<p>Table columns: <code>#</code>, Resort, Location, From, To, Price, Status, chat with. Status mapping:
+<code>0</code> → "pending", <code>1</code> → "Confirmed", <code>2</code>/other → "rejected". Last column is a "message" link to
+<code>chat_with</code> for the resort. Empty state: "No Bookings Yet" + "Browse Resorts" button.</p>
+<h4 id="chat-composer-customerchathtml">Chat composer (<code>customer/chat.html</code>)</h4>
+<p>Standalone Bootstrap page (does not extend the dashboard shell): "Chat with Resort", shows the
+resort name, a required <code>message</code> textarea, "Submit Message" and "Back" to <code>booking_history</code>.</p>
+<h4 id="customer-messages-customerview_chathtml">Customer messages (<code>customer/view_chat.html</code>)</h4>
+<p>Bootstrap table: Resort / My Message / Owner's Reply ("No reply yet" when empty); empty state row.</p>
+<h4 id="owner-dashboard-shell-ownerowner_basehtml">Owner dashboard shell (<code>owner/owner_base.html</code>)</h4>
+<p>Corona Admin layout with sidebar: "My resorts" (<code>my_resorts</code>), "HOME" (<code>list_resorts</code>),
+"resort status" (<code>booking_status</code>), "messages" (<code>display_message</code>), and a prominent
+"+ ADD PROPERTIES" link to <code>resort_add</code>. Also contains unused demo links (charts, icons, samples).</p>
+<h4 id="owner-profile-edit-ownerowner_profilehtml-owneredit_ownerhtml">Owner profile / edit (<code>owner/owner_profile.html</code>, <code>owner/edit_owner.html</code>)</h4>
+<p>Same pattern as the customer equivalents (name/email/phone, "Edit Profile" → <code>edit_owner</code>).</p>
+<h4 id="add-resort-ownerresort_addhtml">Add resort (<code>owner/resort_add.html</code>)</h4>
+<p>Crispy <code>ResortForm</code> in a multipart form (name, description, address, location, picture, pricing),
+"Save" button → creates the resort then redirects to the facilities form.</p>
+<h4 id="add-facilities-ownerresort_facilityhtml">Add facilities (<code>owner/resort_facility.html</code>)</h4>
+<p>Heading "Add Facilities", <code>{{ resort.name }}</code> (never supplied by the view, so it renders empty), a
+crispy form with the five checkboxes, "Save Facilities".</p>
+<h4 id="my-resorts-ownermy_resortshtml">My resorts (<code>owner/my_resorts.html</code>)</h4>
+<p>Heading "List of Your Resorts"; one card per facilities row: image, resort name,
+"Facilities count: {{ facilities.count }}" (total count of the filtered set, identical on every
+card), description, address, location, pricing, a facilities list (✓ per enabled boolean, and an
+always-visible "No facilities found" row), then action links: <strong>Edit Resort</strong>, <strong>Edit Facilities</strong>,
+<strong>add Schedule</strong>, <strong>view schedules</strong>, <strong>Delete Resort</strong> — all built from <code>facility.id</code>
+(see 15.2).</p>
+<h4 id="edit-resort-edit-facilities-owneredit_resorthtml-owneredit_facilitieshtml">Edit resort / edit facilities (<code>owner/edit_resort.html</code>, <code>owner/edit_facilities.html</code>)</h4>
+<p>Both are titled "Edit Resort" (copy-paste), multipart crispy forms, primary "Update Resort" button.</p>
+<h4 id="add-schedule-owneradd_scheduleshtml">Add schedule (<code>owner/add_schedules.html</code>)</h4>
+<p>Bare crispy form (<code>from_date</code>, <code>to_date</code>) + "Save".</p>
+<h4 id="view-schedules-ownerview_scheduleshtml">View schedules (<code>owner/view_schedules.html</code>)</h4>
+<p>Dark Bootstrap table: <code>#</code>, From Date, To Date, Delete (<code>delete_schedule schedule.id</code>);
+empty state "No schedules available."</p>
+<h4 id="booking-status-ownerbooking_statushtml">Booking status (<code>owner/booking_status.html</code>)</h4>
+<p>Table: Customer Name, Resort Name, Time Stamp (<code>i.time_data</code>), from date, to date, Status. For
+status <code>0</code> it renders <strong>approve</strong> (<code>approved i.id</code>) and <strong>reject</strong> (<code>rejected i.id</code>) buttons; for
+<code>1</code> the text "approved"; otherwise "rejected". Empty state: "No bookings found" (colspan 4).</p>
+<h4 id="messages-ownerdisplay_messagehtml">Messages (<code>owner/display_message.html</code>)</h4>
+<p>Table: Resort Name, Message, Respond — shows the existing reply inline or a "Reply" button
+(<code>reply_message chat.id</code>).</p>
+<h4 id="reply-ownerreply_messagehtml">Reply (<code>owner/reply_message.html</code>)</h4>
+<p>"A reply" textarea (<code>name="reply"</code>, required) + "Send Reply".</p>
+<h4 id="admin-shell-and-pages-admin">Admin shell and pages (<code>admin/*</code>)</h4>
+<p><code>admin_base.html</code> — Corona Admin shell with sidebar links Customer (<code>view_customer</code>),
+Owner (<code>view_owner</code>), view resorts (<code>view_resorts</code>) and Logout.
+<code>view_customer.html</code> — table name/phone/email/address/delete (<code>delete_customer i.id</code>).
+<code>view_owner.html</code> — table name/phone/email/delete/update (<code>delete_owner</code>, <code>update_owner</code>).
+<code>update_owner.html</code> — crispy form + save.
+<code>view_resorts.html</code> — resort cards with image, price badge, name, owner name and a pricing footer;
+empty state "No resorts yet".</p>
+<blockquote>
+<p>Several small templates end with a stray letter <code>C</code> after <code>{% endblock %}</code> (for example
+<code>admin/view_customer.html</code>, <code>admin/view_owner.html</code>, <code>admin/update_owner.html</code>,
+<code>customer/edit_customer.html</code>, <code>owner/edit_owner.html</code>) — harmless output, but a typo.</p>
+</blockquote>
+<hr>
+<h2 id="10-end-to-end-user-flows">10. End-to-end user flows</h2>
+<h3 id="101-customer-registration-and-login">10.1 Customer registration and login</h3>
+<ol>
+<li>Visitor → <code>/</code> → "SignUp/LogIn" → <code>/Login</code>.</li>
+<li>"Register" → <code>/customer_registration</code>; fills username + password twice + name, phone, email,
+   address → submit.</li>
+<li>Server creates <code>Login(is_customer=True)</code> and the linked <code>Customer</code>, then redirects to <code>/Login</code>.</li>
+<li>Login with those credentials → <code>is_customer</code> branch → <code>/customer_dashboard</code>.</li>
+</ol>
+<h3 id="102-owner-onboarding-and-resort-publishing">10.2 Owner onboarding and resort publishing</h3>
+<ol>
+<li><code>/owner_registration</code> → creates <code>Login(is_owner=True)</code> + <code>Owner</code>.</li>
+<li>Login → <code>/owner_dashboard</code>.</li>
+<li>"+ ADD PROPERTIES" → <code>/resort_add</code> → fills resort details + uploads a picture.</li>
+<li>Immediately redirected to <code>/resort_facility/&lt;resort.id&gt;/</code> → ticks facilities → save
+   (lands on <code>/owner_dashboard</code>).</li>
+<li>"My resorts" → <code>/add_schedules/&lt;facility.id&gt;/</code> → adds one or more date ranges.</li>
+<li>Slots are now visible to customers; the resort appears on the landing page (it appears as soon
+   as the facilities row exists).</li>
+</ol>
+<h3 id="103-customer-browsing-and-booking">10.3 Customer browsing and booking</h3>
+<ol>
+<li><code>/</code> shows every facility card.</li>
+<li>"Details" → <code>/view_details/&lt;facility_id&gt;</code> (login required).</li>
+<li>"Book Now" → <code>/book_now/&lt;facility_id&gt;</code> — lists slots, hides taken ones.</li>
+<li>"Select This Slot" → <code>/select_slot/&lt;schedule_id&gt;</code> — review page.</li>
+<li>"Confirm Booking" → creates <code>Booking(status=0)</code>, marks the schedule <code>schedule_status=1</code>,
+   → <code>/booking_success</code>.</li>
+<li>"Booking History" → sees the row as <strong>pending</strong>.</li>
+</ol>
+<h3 id="104-owner-approval">10.4 Owner approval</h3>
+<ol>
+<li>Owner → "resort status" → <code>/booking_status</code> — all bookings across their resorts.</li>
+<li><strong>approve</strong> → <code>/approved/&lt;booking_id&gt;</code> → <code>status = 1</code> → back to the list ("approved" text).</li>
+<li><strong>reject</strong> → <code>/rejected/&lt;booking_id&gt;</code> → <code>status = 2</code> → list shows "rejected".
+   The slot stays unavailable either way (see 15.4).</li>
+</ol>
+<h3 id="105-messaging">10.5 Messaging</h3>
+<ol>
+<li>Customer → Booking History → "message" (chat_with) → types a message → submit.</li>
+<li>Message stored with <code>customer</code>, <code>resort</code>, <code>message</code> (no booking link).</li>
+<li>Owner → "messages" → <code>/display_message</code> → sees the message → "Reply" → <code>/reply_message/&lt;chat_id&gt;</code>
+   → types reply → returns to the list showing the reply.</li>
+<li>Customer → "chats" → <code>/view_chat</code> → sees message and the owner's reply.</li>
+</ol>
+<h3 id="106-administrator">10.6 Administrator</h3>
+<ol>
+<li>Staff user logs in → <code>/admin_dashboard</code> (or Django admin at <code>/admin/</code>).</li>
+<li>Can list/delete customers, list/update/delete owners, view all resorts.</li>
+<li>Note: <code>/view_customer</code> → delete currently crashes with <code>NoReverseMatch</code>.</li>
+</ol>
+<hr>
+<h2 id="11-business-rules-and-status-codes">11. Business rules and status codes</h2>
+<p><strong>Booking.status</strong></p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Meaning</th>
+<th>Set by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code></td>
+<td>Pending (default)</td>
+<td><code>select_slot</code> on creation</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>Approved</td>
+<td><code>owner_views.approved</code></td>
+</tr>
+<tr>
+<td><code>2</code></td>
+<td>Rejected</td>
+<td><code>owner_views.rejected</code></td>
+</tr>
+<tr>
+<td>anything else</td>
+<td>Rendered as "rejected" by both templates</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Schedules.schedule_status</strong></p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Meaning</th>
+<th>Set by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code></td>
+<td>Available (default)</td>
+<td><code>Schedule_form</code> default</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>Taken / unavailable</td>
+<td><code>select_slot</code> after a booking</td>
+</tr>
+</tbody>
+</table>
+<p>Not reset when a booking is rejected or when a slot's booking is deleted.</p>
+<p><strong>Effective rules</strong></p>
+<ul>
+<li>A resort is publicly visible as soon as it has a <code>Facilities</code> row.</li>
+<li>Bookings are created without re-validating availability, so the "taken" state is
+  advisory (template-level only).</li>
+<li>Any logged-in user can reach any protected page (no role or ownership enforcement except in
+  <code>edit_resort</code> and <code>delete_resort</code>).</li>
+<li>Prices are free-text strings; there is no currency field, tax, or payment step.</li>
+</ul>
+<hr>
+<h2 id="12-ui-and-design-system">12. UI and design system</h2>
+<ul>
+<li><strong>Landing/public pages:</strong> custom HTML/CSS based on the TemplateMo "Hideaway" real-estate
+  template — Owl Carousel banner, section headings with <code>|</code> separators, Material Design Icons
+  (<code>mdi</code>), Montserrat/Roboto typography, image cards with price badges.</li>
+<li><strong>Dashboards (customer / owner / admin):</strong> the <strong>Corona Admin</strong> Bootstrap 5 theme, with each
+  shell template embedding the theme's CSS/JS inline (~69 KB each) and pulling vendored assets
+  from <code>static/assets_dashboard/</code> (Chart.js, CodeMirror, jVectorMap, flag icons, Owl Carousel,
+  select2, typeahead, progressbar.js, etc. — mostly unused by the app's pages).</li>
+<li><strong>Auth/registration/chat pages:</strong> plain Bootstrap 5.3.8 loaded from jsDelivr CDN, with a
+  centered card layout and small inline styles.</li>
+<li><strong>Forms:</strong> <code>crispy_forms</code> with <code>crispy_bootstrap5</code>, so <code>{{ form|crispy }}</code> renders
+  Bootstrap-styled fields with help text and validation errors.</li>
+<li><strong>Colours/branding:</strong> "INNKeeper" wordmark; the landing page uses a warm neutral palette with an
+  orange line accent; dashboard pages use the Corona palette (purple/green accents).</li>
+</ul>
+<p>Known presentational issues: three near-duplicate 70 KB base templates (no shared layout
+inheritance), embedded CSS instead of static files, dead demo navigation items, and a stray
+<code>C</code> in several templates.</p>
+<hr>
+<h2 id="13-static-and-media-files">13. Static and media files</h2>
+<p><strong><code>static/</code></strong></p>
+<table>
+<thead>
+<tr>
+<th>Folder</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>static/assets_dashboard/</code></td>
+<td>Corona Admin theme: <code>js/</code> (35 demo scripts), <code>scss/</code> (theme sources), <code>vendors/</code> (Chart.js, CodeMirror, flag-icon-css with ~250 country SVGs, jVectorMap, MDI fonts, Owl Carousel, select2, pwstabs, progressbar.js, typeahead)</td>
+</tr>
+<tr>
+<td><code>static/vendor/</code></td>
+<td>Bootstrap 5 (CSS + JS) and jQuery (min + slim + maps)</td>
+</tr>
+</tbody>
+</table>
+<p>These are referenced with <code>{% static %}</code>; note that many landing-page template links point at
+non-existent files such as <code>{% static 'index.html' %}</code> and <code>{% static 'properties.html' %}</code> — those
+render a URL to a file that does not exist (dead navigation).</p>
+<p><strong><code>media/</code></strong> — <code>media/resorts/pictures/</code> holds 13 uploaded resort images, served by Django at
+<code>/media/...</code> in <code>DEBUG</code>. <code>Resorts.picture</code> is a required <code>FileField</code> (no default image), so every
+resort must be created with an image upload.</p>
+<hr>
+<h2 id="14-running-the-project-locally">14. Running the project locally</h2>
+<p><strong>Prerequisites:</strong> Python 3.13, PostgreSQL running on <code>127.0.0.1:5432</code>, database
+<code>innkeeper_main</code> created, user <code>postgres</code> / password <code>1234</code> (or edit <code>settings.py</code>).</p>
+<pre><code class="language-powershell"># 1. Activate the existing virtual environment
+cd C:\Users\ABHAY PADMANABHAN\PycharmProjects\InnKeeper
+.\.venv\Scripts\Activate.ps1
+
+# 2. Install dependencies (no requirements.txt exists)
+pip install &quot;Django==6.1&quot; psycopg2 django-crispy-forms crispy-bootstrap5 django-debug-toolbar
+
+# 3. Apply migrations
+python manage.py migrate
+
+# 4. Create a staff/superuser account for the admin dashboard
+python manage.py createsuperuser
+
+# 5. Run the development server
+python manage.py runserver
+</code></pre>
+<p>Then open <strong>http://127.0.0.1:8000/</strong> (public site), <strong>/Login</strong>, <strong>/admin_dashboard</strong> (staff) and
+<strong>/admin/</strong> (Django admin).</p>
+<p><strong>Useful management commands</strong></p>
+<pre><code class="language-bash">python manage.py makemigrations        # after model edits
+python manage.py migrate
+python manage.py shell                 # inspect data
+python manage.py check                 # sanity check
+</code></pre>
+<p>To create role accounts quickly in the shell:</p>
+<pre><code class="language-python">from InnKeeper_app.models import Login, Owner, Customer
+u = Login.objects.create_user(&quot;owner1&quot;, password=&quot;pass1234&quot;, is_owner=True)
+Owner.objects.create(user=u, name=&quot;Owner One&quot;, phone=&quot;9000000000&quot;, email=&quot;o@x.com&quot;)
+</code></pre>
+<hr>
+<h2 id="15-known-bugs-and-inconsistencies">15. Known bugs and inconsistencies</h2>
+<h3 id="151-broken-redirect-crashes">15.1 Broken redirect (crashes)</h3>
+<ul>
+<li><code>admin_views.delete_customer</code> ends with <code>redirect('admin/view_customer.html')</code>
+  (<code>admin_views.py</code>, line 22). That is a template path, not a URL name → <strong><code>NoReverseMatch</code></strong> every
+  time a customer is deleted from the admin UI. Should be <code>redirect('view_customer')</code>.</li>
+</ul>
+<h3 id="152-wrong-id-passed-between-my_resortshtml-and-the-views">15.2 Wrong ID passed between <code>my_resorts.html</code> and the views</h3>
+<p><code>owner/my_resorts.html</code> builds every action link from <code>facility.id</code> (the <strong>Facilities</strong> primary
+key), but the views expect different keys:</p>
+<table>
+<thead>
+<tr>
+<th>Link</th>
+<th>View expects</th>
+<th>Template passes</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>edit_resort</code></td>
+<td><strong>Resorts</strong> id</td>
+<td>Facilities id</td>
+<td>wrong record or <code>DoesNotExist</code></td>
+</tr>
+<tr>
+<td><code>edit_facilities</code></td>
+<td><strong>Resorts</strong> id</td>
+<td>Facilities id</td>
+<td>wrong record or <code>DoesNotExist</code></td>
+</tr>
+<tr>
+<td><code>delete_resort</code></td>
+<td><strong>Resorts</strong> id</td>
+<td>Facilities id</td>
+<td>may delete the wrong resort</td>
+</tr>
+<tr>
+<td><code>add_schedules</code></td>
+<td>Facilities id</td>
+<td>Facilities id</td>
+<td>correct</td>
+</tr>
+<tr>
+<td><code>view_schedules</code></td>
+<td>Facilities id</td>
+<td>Facilities id</td>
+<td>correct</td>
+</tr>
+</tbody>
+</table>
+<p>It often <em>appears</em> to work only because the first resort and first facility get the same id
+(1:1 insertion order); as soon as the two tables diverge this breaks.</p>
+<h3 id="153-html-damage-in-resort_detailshtml">15.3 HTML damage in <code>resort_details.html</code></h3>
+<p>Stray <code>&lt;/head&gt;&lt;body&gt;</code> inside <code>{% block content %}</code> and a dangling <code>--&gt;</code> at the end of the file.
+The "Book Now" button is also inside the facilities loop, so it renders once per facilities row.</p>
+<h3 id="154-slot-never-becomes-available-again">15.4 Slot never becomes available again</h3>
+<p><code>select_slot</code> sets <code>schedule_status = 1</code> on booking. Neither <code>rejected</code> nor <code>delete_schedule</code>
+(reset) nor deleting a booking clears it, so a rejected booking permanently consumes the slot.
+Also, availability is only checked in the template — <code>select_slot</code> will happily create a second
+booking for an already-taken slot if the POST is repeated.</p>
+<h3 id="155-time_data-does-not-record-the-booking-time">15.5 <code>time_data</code> does not record the booking time</h3>
+<p><code>Booking.time_data = models.DateField(auto_now=True)</code> — a <strong>date</strong>, updated on <strong>every save</strong>.
+Approving or rejecting a booking overwrites the original booking date, and the UI label
+"Time Stamp" shows only a date. A <code>DateTimeField(auto_now_add=True)</code> created-at field (plus a
+separate updated-at) is the correct pattern.</p>
+<h3 id="156-no-authorisation-beyond-login">15.6 No authorisation beyond login</h3>
+<ul>
+<li>No <code>is_staff</code> check on <code>admin_views.*</code> — any logged-in customer can open <code>/view_customer</code>,
+  <code>/delete_owner/1</code>, etc.</li>
+<li>No role check on customer vs owner pages (an owner can open <code>/booking_history</code>).</li>
+<li><code>approved</code> / <code>rejected</code> / <code>reply_message</code> / <code>edit_customer</code> accept any id: an owner can approve
+  another owner's booking, and a customer can edit another customer's profile.</li>
+<li><code>edit_facilities</code> looks up the resort without the owner filter (unlike <code>edit_resort</code>).</li>
+</ul>
+<h3 id="157-destructive-actions-use-get">15.7 Destructive actions use GET</h3>
+<p><code>delete_customer</code>, <code>delete_owner</code>, <code>delete_resort</code>, <code>delete_schedule</code>, <code>approved</code> and <code>rejected</code>
+are all plain <code>&lt;a href&gt;</code> GET links, so they are not CSRF-protected and can be triggered by link
+prefetchers or third-party pages. They should be POST forms with <code>{% csrf_token %}</code>.</p>
+<h3 id="158-assumptions-that-will-fail-with-more-data">15.8 Assumptions that will fail with more data</h3>
+<ul>
+<li><code>Facilities.objects.get(resort=resort)</code> (<code>edit_facilities</code>) raises
+  <code>MultipleObjectsReturned</code> if a resort has two facilities rows.</li>
+<li><code>Customer.objects.get(user=request.user)</code> / <code>Owner.objects.get(...)</code> raise <code>DoesNotExist</code> for a
+  staff user or for a customer/owner whose profile row is missing.</li>
+<li><code>Facilities.count</code> is printed for every card in <code>my_resorts</code> (it is the total of the filtered
+  queryset, not a per-resort count).</li>
+<li>The "No facilities found" list item is never conditional.</li>
+</ul>
+<h3 id="159-template-and-routing-leftovers">15.9 Template and routing leftovers</h3>
+<ul>
+<li><code>Dashboard.html</code>, <code>Landing.html</code> (as a view), <code>base_landing</code> view, <code>landing_page</code>,
+  <code>view_Student</code> are unused/unrouted or error out.</li>
+<li><code>Chat_form</code> is defined but never used (<code>customer/chat.html</code> uses a raw textarea).</li>
+<li><code>title</code> tags on <code>Login.html</code> ("Bootstrap demo") and the dashboards ("Corona Admin") are
+  unrebranded.</li>
+<li>Dead navigation: <code>{% static 'index.html' %}</code> / <code>{% static 'properties.html' %}</code> /
+  <code>{% static 'contact.html' %}</code> links, and the whole unused demo sidebar in the dashboards.</li>
+<li>Trailing/absent slashes are mixed across routes.</li>
+<li>Stray <code>C</code> characters after <code>{% endblock %}</code> in five templates.</li>
+<li>The landing page's contact form posts to <code>/</code> and is discarded.</li>
+<li>No user-visible login error (invalid credentials are only printed to the console).</li>
+</ul>
+<h3 id="1510-data-model-nits">15.10 Data-model nits</h3>
+<ul>
+<li><code>Owner.email</code> is <code>CharField</code>, <code>Customer.email</code> is <code>EmailField</code>.</li>
+<li><code>phone</code> is <code>CharField(10)</code> — no country code or validation.</li>
+<li><code>pricing</code> is a string; no numeric/decimal type, so it cannot be summed or sorted.</li>
+<li><code>Resorts.description</code> uses <code>TextField(max_length=1000)</code> (length not enforced by the DB).</li>
+<li><code>Chat</code> has no timestamps or ordering; the owner's view can show replies out of order.</li>
+<li><code>Login</code> can hold both <code>is_customer</code> and <code>is_owner</code>; the redirect logic silently prefers customer.</li>
+<li><code>dept</code> / <code>Student</code> demo models clutter the schema and the admin.</li>
+</ul>
+<hr>
+<h2 id="16-security-and-production-readiness">16. Security and production readiness</h2>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEBUG = True</code></td>
+<td>exposes tracebacks, settings and SQL; must be <code>False</code> in production</td>
+</tr>
+<tr>
+<td>Hard-coded <code>SECRET_KEY</code></td>
+<td>committed to git; rotate and load from the environment</td>
+</tr>
+<tr>
+<td>DB password in <code>settings.py</code> (<code>postgres</code> / <code>1234</code>)</td>
+<td>move to environment variables or a secret manager</td>
+</tr>
+<tr>
+<td><code>ALLOWED_HOSTS = []</code></td>
+<td>must list real hostnames when <code>DEBUG=False</code></td>
+</tr>
+<tr>
+<td>Development server</td>
+<td><code>runserver</code> is not for production; use gunicorn/uwsgi + a reverse proxy</td>
+</tr>
+<tr>
+<td>Media files</td>
+<td>served by Django only in <code>DEBUG</code>; needs nginx/S3/whitenoise-style handling</td>
+</tr>
+<tr>
+<td>Static files</td>
+<td>no <code>STATIC_ROOT</code> / <code>collectstatic</code> setup for production</td>
+</tr>
+<tr>
+<td>No <code>requirements.txt</code></td>
+<td>deployment is not reproducible</td>
+</tr>
+<tr>
+<td>Broader authz gaps</td>
+<td>see 15.6 — privilege escalation is trivial</td>
+</tr>
+<tr>
+<td>CSRF on state changes</td>
+<td>destructive links are GET (15.7)</td>
+</tr>
+<tr>
+<td>Secret leakage in logs</td>
+<td><code>print()</code> calls expose ids/usernames to the console</td>
+</tr>
+<tr>
+<td><code>debug_toolbar</code> in <code>INSTALLED_APPS</code></td>
+<td>should be dev-only</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="17-suggested-improvements">17. Suggested improvements</h2>
+<p><strong>Correctness (small, high value)</strong></p>
+<ol>
+<li>Fix the <code>delete_customer</code> redirect.</li>
+<li>Pass resort ids instead of facility ids (or change the views) in <code>my_resorts.html</code>.</li>
+<li>Add <code>status</code> resetting / availability release on rejection and on booking deletion.</li>
+<li>Replace <code>time_data</code> with <code>created_at = DateTimeField(auto_now_add=True)</code> and keep a separate
+   <code>updated_at</code>.</li>
+<li>Re-validate <code>schedule_status</code> server-side in <code>select_slot</code>.</li>
+<li>Repair <code>resort_details.html</code> markup and move "Book Now" outside the loop.</li>
+<li>Show real validation/login errors with the <code>messages</code> framework.</li>
+</ol>
+<p><strong>Architecture</strong></p>
+<ol start="8">
+<li>Introduce role-checking decorators (<code>@customer_required</code>, <code>@owner_required</code>,
+   <code>@staff_required</code>) and ownership checks on every object-level action.</li>
+<li>Convert the destructive GET links into POST forms.</li>
+<li>Split settings into base/dev/prod; load secrets from env; add <code>requirements.txt</code>.</li>
+<li>Extract the shared dashboard layout into one base template and move the embedded CSS to
+    <code>static/</code>.</li>
+<li>Remove <code>dept</code>/<code>Student</code> and the debug views/routes.</li>
+</ol>
+<p><strong>Features (if the project is to grow)</strong></p>
+<ol start="13">
+<li>Availability model that supports multiple rooms/units per resort instead of one boolean flag.</li>
+<li>Prices as <code>DecimalField</code> + currency; booking totals; payments.</li>
+<li>Enforce one facilities row per resort with <code>OneToOneField</code> (or support many explicitly).</li>
+<li>Chat: timestamps, threads, notifications, unread counts (or replace with a booking-scoped
+    message model).</li>
+<li>Search/filter/sort on the landing page; pagination.</li>
+<li>Email notifications on booking creation/approval (console backend already configured).</li>
+<li>Tests: unit tests for booking state transitions, permission tests per role.</li>
+</ol>
+<hr>
+<h2 id="18-appendix-a-python-file-inventory">18. Appendix A — Python file inventory</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Size</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>manage.py</code></td>
+<td>695 B</td>
+<td>Django CLI entry point</td>
+</tr>
+<tr>
+<td><code>main.py</code></td>
+<td>544 B</td>
+<td>PyCharm sample script (unused)</td>
+</tr>
+<tr>
+<td><code>InnKeeper_project/settings.py</code></td>
+<td>4.0 KB</td>
+<td>configuration (section 5)</td>
+</tr>
+<tr>
+<td><code>InnKeeper_project/urls.py</code></td>
+<td>1.1 KB</td>
+<td>root URLconf + media + debug toolbar</td>
+</tr>
+<tr>
+<td><code>InnKeeper_project/asgi.py</code> / <code>wsgi.py</code></td>
+<td>427 B each</td>
+<td>deployment entry points</td>
+</tr>
+<tr>
+<td><code>InnKeeper_app/models.py</code></td>
+<td>3.0 KB</td>
+<td>9 models</td>
+</tr>
+<tr>
+<td><code>InnKeeper_app/views.py</code></td>
+<td>3.7 KB</td>
+<td>landing, login, logout, registration, account routing</td>
+</tr>
+<tr>
+<td><code>InnKeeper_app/customer_views.py</code></td>
+<td>4.1 KB</td>
+<td>10 customer views</td>
+</tr>
+<tr>
+<td><code>InnKeeper_app/owner_views.py</code></td>
+<td>6.7 KB</td>
+<td>16 owner views</td>
+</tr>
+<tr>
+<td><code>InnKeeper_app/admin_views.py</code></td>
+<td>2.0 KB</td>
+<td>7 staff views</td>
+</tr>
+<tr>
+<td><code>InnKeeper_app/form.py</code></td>
+<td>1.1 KB</td>
+<td>7 forms (one unused)</td>
+</tr>
+<tr>
+<td><code>InnKeeper_app/urls.py</code></td>
+<td>3.6 KB</td>
+<td>44 URL patterns</td>
+</tr>
+<tr>
+<td><code>InnKeeper_app/admin.py</code></td>
+<td>378 B</td>
+<td>registers 7 models</td>
+</tr>
+<tr>
+<td><code>InnKeeper_app/apps.py</code></td>
+<td>105 B</td>
+<td>app config</td>
+</tr>
+<tr>
+<td><code>InnKeeper_app/tests.py</code></td>
+<td>63 B</td>
+<td>empty</td>
+</tr>
+<tr>
+<td><code>InnKeeper_app/migrations/0001…0012</code></td>
+<td>—</td>
+<td>schema history (section 6.4)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="19-appendix-b-git-history">19. Appendix B — Git history</h2>
+<pre><code>8e044d6  git push
+e3bf3c9  display message
+723abbe  approval and rejection done
+2e41cb2  selecting slot done
+5c0f21d  added the my_resort page to view resorts
+cd5b004  added resort model
+e80d03b  created profile page
+476e7b8  templates loaded and login page done
+</code></pre>
+<p>The working tree has uncommitted modifications (<code>__pycache__</code> files, <code>admin.py</code>, <code>admin_views.py</code>,
+and others), i.e. the repository is not clean. Python bytecode caches are tracked in git — they
+should be added to <code>.gitignore</code>.</p>
+<hr>
+<h2 id="20-appendix-c-glossary">20. Appendix C — Glossary</h2>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning in this project</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Login</strong></td>
+<td>The custom Django user model (<code>AUTH_USER_MODEL</code>), carrying the role flags</td>
+</tr>
+<tr>
+<td><strong>Customer</strong></td>
+<td>Profile row linked 1:1 to a <code>Login</code>; the person booking</td>
+</tr>
+<tr>
+<td><strong>Owner</strong></td>
+<td>Profile row linked 1:1 to a <code>Login</code>; the person listing resorts</td>
+</tr>
+<tr>
+<td><strong>Resort</strong></td>
+<td>A property (name, description, address, location, picture, pricing) owned by an Owner</td>
+</tr>
+<tr>
+<td><strong>Facilities</strong></td>
+<td>The amenity flags of a resort (pool, kitchen, wifi, lawn, balcony); acts as the public "listing" row</td>
+</tr>
+<tr>
+<td><strong>Schedule</strong></td>
+<td>A bookable date range for a facility (<code>from_date</code> … <code>to_date</code>) with an availability flag</td>
+</tr>
+<tr>
+<td><strong>Booking</strong></td>
+<td>A customer's reservation of a schedule, with status 0/1/2</td>
+</tr>
+<tr>
+<td><strong>Chat</strong></td>
+<td>One customer message about a resort plus a single owner reply</td>
+</tr>
+<tr>
+<td><strong>Slot</strong></td>
+<td>UI term for a <code>Schedule</code></td>
+</tr>
+<tr>
+<td><strong>Crispy</strong></td>
+<td><code>django-crispy-forms</code> template filter used to render Bootstrap forms</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><em>End of document.</em></p></body></html>

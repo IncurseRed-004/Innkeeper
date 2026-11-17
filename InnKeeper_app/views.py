@@ -1,10 +1,11 @@
 from django import forms
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
 
 from InnKeeper_app.form import Login_form, Customer_Form, Owner_Form
-from InnKeeper_app.models import Resorts, Facilities, Schedules, Customer, Booking
+from InnKeeper_app.models import Resorts, Facilities, Schedules, Customer, Booking, Student
 
 
 # Create your views here.
@@ -12,6 +13,7 @@ from InnKeeper_app.models import Resorts, Facilities, Schedules, Customer, Booki
 def landing_page(request):
     return render(request, 'Landing.html')
 
+@login_required(login_url = 'Login')
 def dashboard(request):
     return render(request, 'Dashboard.html')
 
@@ -19,7 +21,7 @@ def Logout_view(request):
     logout(request)
     return redirect("Login")
 
-
+@login_required(login_url = 'Login')
 def account_dashboard(request):
 
     user = request.user
@@ -108,6 +110,7 @@ def owner_registration(request):
 
 # list resort
 
+
 def list_resorts(request):
     facility = Facilities.objects.all()
     # print(facility)
@@ -116,3 +119,17 @@ def list_resorts(request):
 
 def base_landing(request):
     return render(request,"base_landing.html")
+
+
+
+def view_Student(request):
+
+    # data = Student.objects.all()
+    #
+    # for student in data:
+    #     print(student.name,student.dept_data.name)
+
+    data = Student.objects.select_related("dept_data").all()
+
+    for student in data:
+        print(student.name, student.dept_data.name)

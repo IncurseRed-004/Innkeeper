@@ -1,12 +1,13 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
 from InnKeeper_app.form import Customer_Form, Owner_Form, ResortForm, Facility_Form, Schedule_form
 from InnKeeper_app.models import Customer, Owner, Resorts, Facilities, Schedules, Booking, Chat
 
-
+@login_required(login_url = 'Login')
 def owner_dashboard(request):
     return render(request,"owner/owner_base.html")
-
+@login_required(login_url = 'Login')
 def owner_profile(request):
     user_data = request.user #currently logged in user
     print(user_data.id)
@@ -17,6 +18,7 @@ def owner_profile(request):
     # print("email: ",owner_data.email)
     return render(request,"owner/owner_profile.html",{'owner_data':owner_data})
 
+@login_required(login_url = 'Login')
 def edit_owner(request, id):
     data = Owner.objects.get(id=id)
     if request.method == 'POST':
@@ -31,6 +33,7 @@ def edit_owner(request, id):
 
 # add resort
 
+@login_required(login_url = 'Login')
 def resort_add(request):
 
         data = Owner.objects.get(user = request.user)
@@ -52,6 +55,7 @@ def resort_add(request):
 
 # add facilities
 
+@login_required(login_url = 'Login')
 def resort_facility(request,resort_id):
     data = Resorts.objects.get(id=resort_id)
 
@@ -72,6 +76,7 @@ def resort_facility(request,resort_id):
 
 # edit resort detailes
 
+@login_required(login_url = 'Login')
 def edit_resort(request, id):
     owner = Owner.objects.get(user=request.user)
     resort = Resorts.objects.get(id=id, owner=owner)
@@ -90,6 +95,7 @@ def edit_resort(request, id):
 
 # edit facilities
 
+@login_required(login_url = 'Login')
 def edit_facilities(request,resort_id):
     resort = Resorts.objects.get(id=resort_id)
     data = Facilities.objects.get(resort=resort)
@@ -108,6 +114,7 @@ def edit_facilities(request,resort_id):
 
 # delete resorts:
 
+@login_required(login_url = 'Login')
 def delete_resort(request,resort_id):
     owner = Owner.objects.get(user = request.user)
     resort = Resorts.objects.get(id=resort_id,owner = owner)
@@ -115,17 +122,39 @@ def delete_resort(request,resort_id):
     return redirect('my_resorts')
 
 
+@login_required(login_url = 'Login')
 def my_resorts(request):
-    user = request.user
-    print(user)
+
     owner_var = Owner.objects.get(user = request.user)
-    print(owner_var)
+
     facilities = Facilities.objects.filter(resort__owner=owner_var)
-    print(facilities)
+
     return render(request,'owner/my_resorts.html',{'facilities':facilities})
+
+
+# def my_resorts(request):
+#     facilities = Facilities.objects.filter(
+#         resort__owner__user=request.user
+#     ).select_related(
+#         'resort',
+#         'resort__owner'
+#     )
+#
+#     return render(request, 'owner/my_resorts.html', {
+#         'facilities': facilities
+#     })
+
+
+
+
+
+
+
+
 
 # schedules
 
+@login_required(login_url = 'Login')
 def add_schedules(request,id):
     data = Facilities.objects.get(id = id)
 
@@ -142,21 +171,24 @@ def add_schedules(request,id):
 
     return render(request,'owner/add_schedules.html',{'form':form})
 
+@login_required(login_url = 'Login')
 def view_schedules(request,id):
     schedules = Schedules.objects.filter(facilities = id)
     return render(request,'owner/view_schedules.html',{'schedules':schedules})
 
-
+@login_required(login_url = 'Login')
 def  delete_schedule(request,id):
      slots = Schedules.objects.get(id=id)
      slots.delete()
      return redirect('my_resorts')
 
+@login_required(login_url = 'Login')
 def booking_status(request):
     owner = Owner.objects.get(user = request.user)
     booking = Booking.objects.filter(schedule__facilities__resort__owner=owner)
     return render(request,'owner/booking_status.html',{'booking':booking})
 
+@login_required(login_url = 'Login')
 def approved(request, id):
     booking = Booking.objects.get(id = id)
     booking.status = 1
@@ -164,16 +196,30 @@ def approved(request, id):
     return redirect('booking_status')
 
 
+@login_required(login_url = 'Login')
 def rejected(request, id):
     booking = Booking.objects.get(id = id)
     booking.status = 2
     booking.save()
     return redirect('booking_status')
 
+@login_required(login_url = 'Login')
 def display_message(request):
     owner = Owner.objects.get(user = request.user)
     data = Chat.objects.filter(resort__owner=owner)
     return render(request,'owner/display_message.html',{'data':data})
 
-# def reply_message(request,id):
+@login_required(login_url = 'Login')
+def reply_message(request,id):
+    chat = Chat.objects.get(id =id)
+
+    if request.method == 'POST':
+        chat.reply = request.POST.get('reply')
+        chat.save()
+
+        return redirect('display_message')
+
+    return render(request, 'owner/reply_message.html')
+
+
 

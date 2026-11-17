@@ -54,8 +54,6 @@ INSTALLED_APPS = [
     'InnKeeper_app',
 ]
 
-if DEBUG:
-    INSTALLED_APPS += ['debug_toolbar']
 
 
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
@@ -71,14 +69,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware'
 ]
 
 
-if DEBUG:
-    MIDDLEWARE += [
-        'debug_toolbar.middleware.DebugToolbarMiddleware'
-    ]
 
 ROOT_URLCONF = 'InnKeeper_project.urls'
 
@@ -176,11 +169,6 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
-INTERNAL_IPS = [
-    # ...
-    "127.0.0.1",
-    # ...
-]
 
 CSRF_TRUSTED_ORIGINS = []
 
